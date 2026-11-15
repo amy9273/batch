@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Clock, Layers } from 'lucide-react';
+import { Clock, Layers, ArrowRight } from 'lucide-react';
 import { BatchSummary } from '@/types/airtable';
 import { StatusBadge } from './StatusBadge';
 
@@ -23,49 +23,49 @@ export function BatchCard({ batch }: BatchCardProps) {
   return (
     <Link
       href={`/batch/${batch.id}`}
-      className="block group bg-white rounded-xl p-5 border border-slate-200 shadow-2xs hover:border-slate-400 hover:shadow-xs transition-all active:scale-[0.995]"
+      className="block group bg-white rounded-xl p-5 border border-slate-300 shadow-2xs hover:border-teal-600 transition-all active:scale-[0.985]"
     >
-      <div className="flex items-start justify-between gap-3 mb-3">
+      <div className="flex items-start justify-between gap-3 mb-2.5">
         <div>
-          <span className="text-[11px] font-mono text-slate-500 uppercase tracking-wide">
-            Batch
+          <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest block">
+            Restoration Batch
           </span>
-          <h2 className="text-lg font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
+          <h2 className="text-lg font-black text-slate-900 group-hover:text-teal-800 transition-colors font-mono">
             {batch.name}
           </h2>
         </div>
         <StatusBadge type="batch-status" value={statusType} />
       </div>
 
-      {/* Started timestamp & task count */}
+      {/* Started timestamp & procedure metrics */}
       <div className="text-xs text-slate-600 mb-4 flex items-center gap-3 flex-wrap">
         {batch.startedAt ? (
-          <span className="inline-flex items-center gap-1.5 text-teal-800 font-medium">
-            <Clock className="w-3.5 h-3.5 text-teal-600" />
-            Started at {new Date(batch.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          <span className="inline-flex items-center gap-1.5 text-teal-900 font-semibold bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+            <Clock className="w-3.5 h-3.5 text-teal-700" />
+            Started: {new Date(batch.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1.5 text-slate-500">
-            <Clock className="w-3.5 h-3.5 text-slate-400" />
-            Not started yet
+          <span className="inline-flex items-center gap-1.5 text-amber-800 font-medium bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+            <Clock className="w-3.5 h-3.5 text-amber-600" />
+            Awaiting bench start
           </span>
         )}
 
-        <span className="inline-flex items-center gap-1 text-slate-600">
+        <span className="inline-flex items-center gap-1 text-slate-600 font-medium">
           <Layers className="w-3.5 h-3.5 text-slate-400" />
-          {batch.totalTasks} tasks
+          {batch.totalTasks} procedures
         </span>
       </div>
 
-      {/* Progress */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-xs">
+      {/* Progress Bar */}
+      <div className="space-y-1.5 mb-3">
+        <div className="flex items-center justify-between text-xs font-medium">
           <span className="text-slate-600">
-            Progress: <strong className="text-slate-900 font-semibold">{batch.completedTasks}</strong> of <strong className="text-slate-900 font-semibold">{batch.totalTasks}</strong> completed
+            Progress: <strong className="text-slate-900 font-bold">{batch.completedTasks}</strong> / <strong className="text-slate-900 font-bold">{batch.totalTasks}</strong> done
           </span>
-          <span className="font-bold text-slate-900">{percent}%</span>
+          <span className="font-mono font-bold text-slate-900">{percent}%</span>
         </div>
-        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200/60">
+        <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
           <div
             className={`h-full transition-all duration-300 rounded-full ${
               batch.isCompleted
@@ -79,10 +79,10 @@ export function BatchCard({ batch }: BatchCardProps) {
         </div>
       </div>
 
-      {/* Footer navigation cue */}
-      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-700 group-hover:text-teal-700">
-        <span>View batch tasks</span>
-        <span className="font-mono text-slate-400 group-hover:text-teal-600">→</span>
+      {/* Direct Tap Action Cue (Thumb Zone Target) */}
+      <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-teal-700 group-hover:text-teal-900">
+        <span>{batch.hasStarted ? 'Open batch docket' : 'Open & start batch'}</span>
+        <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
       </div>
     </Link>
   );

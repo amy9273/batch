@@ -14,6 +14,8 @@ import {
   AlertTriangle,
   Loader2,
   Play,
+  Clock,
+  Sparkles,
 } from 'lucide-react';
 
 interface BatchPageProps {
@@ -80,7 +82,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
         throw new Error(result.error || 'Failed to start batch.');
       }
 
-      setSaveSuccessMessage('Batch started and saved to Airtable.');
+      setSaveSuccessMessage('Batch started and verified in Airtable.');
       // Re-fetch batch to ensure fresh state from Airtable
       await fetchBatch(true);
     } catch (err: unknown) {
@@ -105,13 +107,17 @@ function BatchDetailContent({ params }: BatchPageProps) {
       throw new Error(result.error || 'Failed to complete task.');
     }
 
-    setSaveSuccessMessage('Task marked as done and saved to Airtable.');
+    setSaveSuccessMessage('Procedure marked done and saved to Airtable.');
     // Re-fetch batch to get recalculated Task States and Done counts from Airtable
     await fetchBatch(true);
   };
 
   const batch = data?.batch;
   const tasks = data?.tasks || [];
+
+  const readyCount = tasks.filter((t) => !t.isLocked && !t.isDone).length;
+  const lockedCount = tasks.filter((t) => t.isLocked).length;
+  const doneCount = tasks.filter((t) => t.isDone).length;
 
   const filteredTasks = tasks.filter((t) => {
     if (filterMode === 'ready') return !t.isLocked && !t.isDone;
@@ -126,41 +132,42 @@ function BatchDetailContent({ params }: BatchPageProps) {
       : 0;
 
   return (
-    <div className="min-h-screen bg-slate-100/60 flex flex-col">
-      <Header title="Sole Surgeon" showBack />
+    <div className="min-h-screen bg-slate-50 flex flex-col pb-24 sm:pb-8">
+      <Header title="SOLE SURGEON" showBack />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-5 sm:px-6">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-4 sm:px-6">
         {/* Navigation & Refresh Bar */}
-        <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="flex items-center justify-between gap-3 mb-3.5">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 transition bg-white px-3 py-1.5 rounded-lg border border-slate-300 shadow-2xs"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 transition bg-white px-3 py-1.5 rounded-lg border border-slate-300 shadow-2xs"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            Back to batches
+            Admissions
           </Link>
 
           <button
             onClick={() => fetchBatch(true)}
             disabled={isLoading || isRefreshing}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition shadow-2xs cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition shadow-2xs cursor-pointer disabled:opacity-50"
             title="Refresh batch from Airtable"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-teal-600' : ''}`} />
-            <span className="hidden sm:inline">Refresh</span>
+            <span className="hidden sm:inline">Sync Airtable</span>
+            <span className="sm:hidden">Sync</span>
           </button>
         </div>
 
         {/* Global Save Notifications */}
         {saveSuccessMessage && (
-          <div className="mb-4 p-3 bg-emerald-50 border border-emerald-300 rounded-lg flex items-center justify-between gap-2 text-xs font-medium text-emerald-900">
+          <div className="mb-3.5 p-3 bg-emerald-50 border border-emerald-300 rounded-lg flex items-center justify-between gap-2 text-xs font-bold text-emerald-900 shadow-2xs">
             <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-emerald-700 shrink-0 stroke-[2.5]" />
+              <Check className="w-4 h-4 text-emerald-700 shrink-0 stroke-[3]" />
               <span>{saveSuccessMessage}</span>
             </div>
             <button
               onClick={() => setSaveSuccessMessage(null)}
-              className="text-emerald-700 hover:text-emerald-950 font-bold px-1"
+              className="text-emerald-700 hover:text-emerald-950 font-black px-1 cursor-pointer"
             >
               ×
             </button>
@@ -168,14 +175,14 @@ function BatchDetailContent({ params }: BatchPageProps) {
         )}
 
         {errorMessage && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded-lg flex items-center justify-between gap-2 text-xs font-medium text-red-900">
+          <div className="mb-3.5 p-3 bg-red-50 border border-red-300 rounded-lg flex items-center justify-between gap-2 text-xs font-bold text-red-900 shadow-2xs">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-red-700 shrink-0" />
               <span>{errorMessage}</span>
             </div>
             <button
               onClick={() => setErrorMessage(null)}
-              className="text-red-700 hover:text-red-950 font-bold px-1"
+              className="text-red-700 hover:text-red-950 font-black px-1 cursor-pointer"
             >
               ×
             </button>
@@ -192,13 +199,13 @@ function BatchDetailContent({ params }: BatchPageProps) {
           />
         ) : (
           <div className="space-y-4">
-            {/* Batch Overview Header Card */}
-            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-2xs">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b border-slate-100">
+            {/* Batch Docket Header Card */}
+            <div className="bg-white rounded-xl p-4 sm:p-5 border border-slate-300 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3.5 pb-3.5 border-b border-slate-100">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[11px] font-mono text-slate-500 uppercase">
-                      Batch
+                    <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">
+                      Procedure Docket
                     </span>
                     <StatusBadge
                       type="batch-status"
@@ -211,35 +218,35 @@ function BatchDetailContent({ params }: BatchPageProps) {
                       }
                     />
                   </div>
-                  <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-mono">
                     {batch.name}
                   </h2>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Worker: <span className="font-semibold text-slate-800">{batch.worker}</span> • Target: <span className="font-semibold text-slate-800">{batch.targetDate}</span>
+                  <p className="text-xs text-slate-600 mt-1 font-medium">
+                    Lead Surgeon: <span className="font-bold text-slate-900">{batch.worker}</span> • Sched: <span className="font-bold text-slate-900">{batch.targetDate}</span>
                   </p>
                 </div>
 
-                {/* Start Batch CTA Area */}
-                <div className="sm:self-center shrink-0">
+                {/* Desktop Action Area */}
+                <div className="hidden sm:block sm:self-center shrink-0">
                   {batch.hasStarted ? (
-                    <div className="flex flex-col sm:items-end">
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200">
+                    <div className="flex flex-col items-end">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-teal-50 text-teal-900 border border-teal-300">
                         <Check className="w-3.5 h-3.5 text-teal-700 stroke-[2.5]" />
                         <span>Started at {new Date(batch.startedAt!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
-                      <span className="text-[11px] text-slate-500 mt-1">
-                        Batch is active
+                      <span className="text-[10px] text-slate-500 mt-1">
+                        Active in restoration
                       </span>
                     </div>
                   ) : (
                     <button
                       onClick={handleStartBatch}
                       disabled={isStartingBatch}
-                      className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-lg text-xs font-semibold bg-teal-600 text-white hover:bg-teal-700 active:bg-teal-800 transition shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                      className="min-h-[46px] px-5 py-2.5 rounded-lg text-xs font-black bg-teal-600 text-white hover:bg-teal-700 active:bg-teal-800 transition shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
                       {isStartingBatch ? (
                         <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <Loader2 className="w-4 h-4 animate-spin" />
                           Starting batch...
                         </>
                       ) : (
@@ -254,14 +261,14 @@ function BatchDetailContent({ params }: BatchPageProps) {
               </div>
 
               {/* Progress Summary */}
-              <div className="pt-4 space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
+              <div className="pt-3.5 space-y-1.5">
+                <div className="flex items-center justify-between text-xs font-medium">
                   <span className="text-slate-600">
-                    Completed: <strong className="text-slate-900 font-semibold">{batch.completedTasks}</strong> of <strong className="text-slate-900 font-semibold">{batch.totalTasks}</strong> tasks
+                    Procedures: <strong className="text-slate-900 font-bold">{batch.completedTasks}</strong> of <strong className="text-slate-900 font-bold">{batch.totalTasks}</strong> completed
                   </span>
-                  <span className="font-bold text-slate-900">{percent}%</span>
+                  <span className="font-mono font-bold text-slate-900">{percent}%</span>
                 </div>
-                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200/60">
+                <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                   <div
                     className={`h-full transition-all duration-300 rounded-full ${
                       batch.isCompleted ? 'bg-emerald-600' : 'bg-teal-600'
@@ -272,67 +279,70 @@ function BatchDetailContent({ params }: BatchPageProps) {
               </div>
             </div>
 
-            {/* Task Filters & Section Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-slate-900">
-                  Tasks
+            {/* Sticky Mobile Triage Filter Tray */}
+            <div className="sticky top-[53px] z-30 bg-slate-50/95 backdrop-blur-md py-2 -mx-4 px-4 sm:mx-0 sm:px-0 border-y sm:border-y-0 border-slate-200/80">
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Procedures ({tasks.length})
                 </h3>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-200 text-slate-700">
-                  {tasks.length}
-                </span>
+                {readyCount > 0 && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-teal-800 bg-teal-100/80 px-2 py-0.5 rounded">
+                    <Sparkles className="w-3 h-3 text-teal-600" />
+                    {readyCount} ready now
+                  </span>
+                )}
               </div>
 
-              {/* Quick Filter Tabs */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 text-xs">
+              {/* High-Contrast Pill Switcher */}
+              <div className="grid grid-cols-4 gap-1.5 text-xs font-bold">
                 <button
                   onClick={() => setFilterMode('all')}
-                  className={`px-3 py-1.5 rounded font-medium transition cursor-pointer shrink-0 ${
+                  className={`py-2 px-1 text-center rounded-lg transition-all cursor-pointer ${
                     filterMode === 'all'
-                      ? 'bg-slate-900 text-white'
-                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-300'
                   }`}
                 >
                   All ({tasks.length})
                 </button>
                 <button
                   onClick={() => setFilterMode('ready')}
-                  className={`px-3 py-1.5 rounded font-medium transition cursor-pointer shrink-0 ${
+                  className={`py-2 px-1 text-center rounded-lg transition-all cursor-pointer ${
                     filterMode === 'ready'
-                      ? 'bg-teal-700 text-white'
-                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                      ? 'bg-teal-700 text-white shadow-xs'
+                      : 'bg-white text-teal-900 hover:bg-teal-50 border border-teal-300'
                   }`}
                 >
-                  Ready ({tasks.filter((t) => !t.isLocked && !t.isDone).length})
+                  Ready ({readyCount})
                 </button>
                 <button
                   onClick={() => setFilterMode('locked')}
-                  className={`px-3 py-1.5 rounded font-medium transition cursor-pointer shrink-0 ${
+                  className={`py-2 px-1 text-center rounded-lg transition-all cursor-pointer ${
                     filterMode === 'locked'
-                      ? 'bg-amber-700 text-white'
-                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                      ? 'bg-amber-700 text-white shadow-xs'
+                      : 'bg-white text-amber-900 hover:bg-amber-50 border border-amber-300'
                   }`}
                 >
-                  Locked ({tasks.filter((t) => t.isLocked).length})
+                  Locked ({lockedCount})
                 </button>
                 <button
                   onClick={() => setFilterMode('done')}
-                  className={`px-3 py-1.5 rounded font-medium transition cursor-pointer shrink-0 ${
+                  className={`py-2 px-1 text-center rounded-lg transition-all cursor-pointer ${
                     filterMode === 'done'
-                      ? 'bg-emerald-700 text-white'
-                      : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'bg-white text-emerald-900 hover:bg-emerald-50 border border-emerald-300'
                   }`}
                 >
-                  Done ({tasks.filter((t) => t.isDone).length})
+                  Done ({doneCount})
                 </button>
               </div>
             </div>
 
-            {/* Tasks List */}
+            {/* Task Procedure List */}
             {filteredTasks.length === 0 ? (
-              <div className="bg-white rounded-xl p-8 border border-slate-200 text-center">
-                <p className="text-xs text-slate-500">
-                  No tasks match the filter &quot;{filterMode}&quot;.
+              <div className="bg-white rounded-xl p-8 border border-slate-300 text-center">
+                <p className="text-xs text-slate-500 font-medium">
+                  No procedures match the selected triage filter ({filterMode}).
                 </p>
               </div>
             ) : (
@@ -350,6 +360,41 @@ function BatchDetailContent({ params }: BatchPageProps) {
           </div>
         )}
       </main>
+
+      {/* Sticky Mobile Bench Bar (Pinned in the Thumb Zone) */}
+      {data && batch && (
+        <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-300 p-3 sm:hidden shadow-lg pb-safe">
+          {batch.hasStarted ? (
+            <div className="flex items-center justify-between text-xs font-bold text-teal-900 bg-teal-50 px-3.5 py-2.5 rounded-lg border border-teal-200">
+              <span className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-teal-700" />
+                Batch active • Started at {new Date(batch.startedAt!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+              <span className="font-mono text-slate-700">
+                {batch.completedTasks}/{batch.totalTasks} Done
+              </span>
+            </div>
+          ) : (
+            <button
+              onClick={handleStartBatch}
+              disabled={isStartingBatch}
+              className="w-full min-h-[50px] px-6 py-3 rounded-xl text-sm font-black bg-teal-600 text-white hover:bg-teal-700 active:bg-teal-800 active:scale-[0.98] transition shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              {isStartingBatch ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Starting batch...
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 fill-white" />
+                  Start Batch Now (Tap to begin)
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -358,8 +403,8 @@ export default function BatchDetailPage({ params }: BatchPageProps) {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-slate-100/60 flex flex-col">
-          <Header title="Sole Surgeon" showBack />
+        <div className="min-h-screen bg-slate-50 flex flex-col">
+          <Header title="SOLE SURGEON" showBack />
           <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-5 sm:px-6">
             <LoadingSkeleton count={4} />
           </main>
