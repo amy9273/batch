@@ -20,8 +20,8 @@ interface CareNoteProps {
  */
 function CareNote({ note }: CareNoteProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  // Notes exceeding ~110 characters generally occupy more than 3-4 lines on mobile screens
-  const isLong = note.length > 110 || note.split('\n').length > 3;
+  // Notes exceeding ~90 characters occupy more than 2 lines, qualifying for progressive disclosure
+  const isLong = note.length > 90 || note.split('\n').length > 2;
 
   return (
     <div className="my-1.5 p-2 sm:p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-950 flex flex-col sm:flex-row sm:items-start gap-1.5 sm:gap-2">
@@ -36,13 +36,13 @@ function CareNote({ note }: CareNoteProps) {
       <div className="min-w-0 flex-1">
         <p
           className={`font-medium text-amber-900 leading-snug break-words ${
-            isLong && !isExpanded ? 'line-clamp-3' : ''
+            isLong && !isExpanded ? 'line-clamp-2' : ''
           }`}
           style={
             isLong && !isExpanded
               ? {
                   display: '-webkit-box',
-                  WebkitLineClamp: 3,
+                  WebkitLineClamp: 2,
                   WebkitBoxOrient: 'vertical',
                   overflow: 'hidden',
                 }
