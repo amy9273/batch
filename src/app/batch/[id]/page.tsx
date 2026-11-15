@@ -239,13 +239,12 @@ function BatchDetailContent({ params }: BatchPageProps) {
               )}
             </div>
 
-            {/* Segmented Filter Control Bar (Single Clean Row) */}
+            {/* Segmented Filter Control Bar (Single Clean Row, Equal Balanced Columns) */}
             <div className="sticky top-[52px] z-30 bg-slate-50/95 backdrop-blur-md py-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-              {/* Flex row gives In Progress full space while keeping others compact */}
-              <div className="flex items-center bg-slate-200/70 p-1 rounded-lg text-xs font-bold gap-1 sm:gap-1.5">
+              <div className="grid grid-cols-4 gap-1 sm:gap-1.5 bg-slate-200/70 p-1 rounded-lg text-[11px] sm:text-xs font-bold tracking-tight">
                 <button
                   onClick={() => setFilterMode('all')}
-                  className={`py-1.5 px-2 sm:px-3 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 whitespace-nowrap shrink-0 ${
+                  className={`py-1.5 px-0.5 sm:px-2 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 whitespace-nowrap ${
                     filterMode === 'all'
                       ? 'bg-white text-[#111827] shadow-xs'
                       : 'text-[#64748B] hover:text-[#111827]'
@@ -255,7 +254,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
                 </button>
                 <button
                   onClick={() => setFilterMode('in_progress')}
-                  className={`py-1.5 px-2.5 sm:px-4 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 whitespace-nowrap flex-1 ${
+                  className={`py-1.5 px-0.5 sm:px-2 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 whitespace-nowrap ${
                     filterMode === 'in_progress'
                       ? 'bg-[#009B83] text-white shadow-xs'
                       : 'text-[#64748B] hover:text-[#111827]'
@@ -265,7 +264,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
                 </button>
                 <button
                   onClick={() => setFilterMode('locked')}
-                  className={`py-1.5 px-2 sm:px-3 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 whitespace-nowrap shrink-0 ${
+                  className={`py-1.5 px-0.5 sm:px-2 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 whitespace-nowrap ${
                     filterMode === 'locked'
                       ? 'bg-slate-700 text-white shadow-xs'
                       : 'text-[#64748B] hover:text-[#111827]'
@@ -275,7 +274,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
                 </button>
                 <button
                   onClick={() => setFilterMode('done')}
-                  className={`py-1.5 px-2 sm:px-3 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 whitespace-nowrap shrink-0 ${
+                  className={`py-1.5 px-0.5 sm:px-2 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 whitespace-nowrap ${
                     filterMode === 'done'
                       ? 'bg-[#047857] text-white shadow-xs'
                       : 'text-[#64748B] hover:text-[#111827]'
