@@ -1,6 +1,6 @@
 'use client';
 
-import React, { use, Suspense } from 'react';
+import React, { use, Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { TaskRow } from '@/components/TaskRow';
@@ -27,6 +27,11 @@ interface BatchPageProps {
 function BatchDetailContent({ params }: BatchPageProps) {
   const resolvedParams = use(params);
   const batchId = resolvedParams.id;
+
+  const [isMounted, setIsMounted] = useState(false);
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const {
     batch,
@@ -55,6 +60,10 @@ function BatchDetailContent({ params }: BatchPageProps) {
     batch && batch.totalTasks > 0
       ? Math.round((batch.completedTasks / batch.totalTasks) * 100)
       : 0;
+
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col pb-32 sm:pb-12" suppressHydrationWarning>
@@ -353,16 +362,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
 
 export default function BatchDetailPage({ params }: BatchPageProps) {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-slate-50 flex flex-col">
-          <Header title="Sole Surgeon" showBack />
-          <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-5 sm:px-6">
-            <LoadingSkeleton count={4} />
-          </main>
-        </div>
-      }
-    >
+    <Suspense fallback={null}>
       <BatchDetailContent params={params} />
     </Suspense>
   );

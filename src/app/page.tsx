@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { BatchCard } from '@/components/BatchCard';
 import { LoadingSkeleton, ErrorMessage } from '@/components/FeedbackStates';
@@ -8,6 +8,11 @@ import { useBatches } from '@/hooks/useBatches';
 import { RefreshCw, AlertCircle } from 'lucide-react';
 
 export default function BatchListPage() {
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const { batches, isLoading, isRefreshing, error, refresh, retry } = useBatches();
 
   // Metric summaries derived directly from data according to exam spec
@@ -15,6 +20,10 @@ export default function BatchListPage() {
   const totalTasks = batches.reduce((acc, b) => acc + b.totalTasks, 0);
   const tasksCompleted = batches.reduce((acc, b) => acc + b.completedTasks, 0);
   const tasksRemaining = Math.max(0, totalTasks - tasksCompleted);
+
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col pb-safe" suppressHydrationWarning>

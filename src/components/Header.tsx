@@ -19,15 +19,15 @@ export function Header({ title = 'Sole Surgeon' }: HeaderProps) {
         <div className="flex items-center justify-between gap-3">
           {/* Logo & Brand Identity */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-md bg-teal-600 flex items-center justify-center font-mono font-black text-white text-xs tracking-wider shadow-inner group-hover:bg-teal-500 transition-colors">
+            <span className="w-8 h-8 rounded-md bg-[#009B83] flex items-center justify-center font-mono font-black text-white text-xs tracking-wider shadow-inner group-hover:bg-teal-500 transition-colors shrink-0">
               SS
-            </div>
-            <div>
+            </span>
+            <span>
               <span className="text-sm font-bold tracking-tight text-white block leading-tight">
                 {title}
               </span>
-              <p className="text-[11px] text-teal-200/80 font-medium">Shoe &amp; Bag Care</p>
-            </div>
+              <span className="text-[11px] text-teal-200/80 font-medium block">Shoe &amp; Bag Care</span>
+            </span>
           </Link>
 
           {/* Simple Context Badges & PWA Action */}
