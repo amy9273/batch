@@ -1,46 +1,16 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React from 'react';
 import { Header } from '@/components/Header';
 import { BatchCard } from '@/components/BatchCard';
 import { LoadingSkeleton, ErrorMessage } from '@/components/FeedbackStates';
-import { BatchSummary } from '@/types/airtable';
+import { useBatches } from '@/hooks/useBatches';
 import { RefreshCw, AlertCircle } from 'lucide-react';
 
 export default function BatchListPage() {
-  const [batches, setBatches] = useState<BatchSummary[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { batches, isLoading, isRefreshing, error, refresh, retry } = useBatches();
 
-  const fetchBatches = useCallback(async (showRefreshing = false) => {
-    try {
-      if (showRefreshing) setIsRefreshing(true);
-      else setIsLoading(true);
-      setError(null);
-
-      const res = await fetch('/api/batches');
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Could not load batches.');
-      }
-
-      setBatches(data.data);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Could not connect. Please try again.';
-      setError(msg);
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchBatches();
-  }, [fetchBatches]);
-
-  // Metric summaries in plain terms
+  // Metric summaries derived directly from data (rerender-derived-state-no-effect)
   const totalBatches = batches.length;
   const startedBatches = batches.filter((b) => b.hasStarted).length;
   const completedBatches = batches.filter((b) => b.isCompleted).length;
@@ -52,7 +22,7 @@ export default function BatchListPage() {
       <Header title="Sole Surgeon" />
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-5 sm:px-6">
-        {/* Page Title & Refresh */}
+        {/* Header Title & Refresh */}
         <div className="flex items-center justify-between gap-3 mb-5">
           <div>
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
@@ -64,7 +34,7 @@ export default function BatchListPage() {
           </div>
 
           <button
-            onClick={() => fetchBatches(true)}
+            onClick={refresh}
             disabled={isLoading || isRefreshing}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition shadow-2xs cursor-pointer disabled:opacity-50"
             title="Refresh batch list"
@@ -117,7 +87,7 @@ export default function BatchListPage() {
           <ErrorMessage
             title="Could not load batches"
             message={error}
-            onRetry={() => fetchBatches(false)}
+            onRetry={retry}
           />
         ) : batches.length === 0 ? (
           <div className="bg-white rounded-xl p-10 border border-slate-200 text-center max-w-md mx-auto my-8">
@@ -131,7 +101,7 @@ export default function BatchListPage() {
               There are no batches assigned to Ana for October 22, 2026.
             </p>
             <button
-              onClick={() => fetchBatches(false)}
+              onClick={retry}
               className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition cursor-pointer"
             >
               Check again

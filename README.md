@@ -14,6 +14,7 @@ A mobile-first Progressive Web App (PWA) built for **Sole Surgeon's Production C
 * **Database:** Airtable REST API (Tables: `Batches`, `Tasks`, `Items`)
 * **PWA:** Web App Manifest (`manifest.json`), Service Worker (`sw.js`), 192x192 & 512x512 app icons, Chrome installable window mode.
 * **Testing:** Node.js native test runner via `tsx --test` (mock data only, 0 live Airtable mutations during tests).
+* **Software Architecture:** Object-Oriented Service Layer (SOLID principles, Dependency Inversion, Domain Error hierarchy, pure Rule Engine validators, and custom React hooks eliminating component bloat).
 
 ---
 

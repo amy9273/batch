@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, use, Suspense } from 'react';
+import React, { use, Suspense } from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { TaskRow } from '@/components/TaskRow';
 import { LoadingSkeleton, ErrorMessage } from '@/components/FeedbackStates';
 import { StatusBadge } from '@/components/StatusBadge';
-import { BatchDetailData } from '@/types/airtable';
+import { useBatchDetails } from '@/hooks/useBatchDetails';
 import {
   ArrowLeft,
   Check,
@@ -26,105 +26,27 @@ function BatchDetailContent({ params }: BatchPageProps) {
   const resolvedParams = use(params);
   const batchId = resolvedParams.id;
 
-  const [data, setData] = useState<BatchDetailData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isStartingBatch, setIsStartingBatch] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [saveSuccessMessage, setSaveSuccessMessage] = useState<string | null>(null);
-  const [filterMode, setFilterMode] = useState<'all' | 'ready' | 'locked' | 'done'>('all');
-
-  const fetchBatch = useCallback(
-    async (showRefreshing = false) => {
-      try {
-        if (showRefreshing) setIsRefreshing(true);
-        else setIsLoading(true);
-        setErrorMessage(null);
-
-        const res = await fetch(`/api/batches/${batchId}`);
-        const result = await res.json();
-
-        if (!res.ok || !result.success) {
-          throw new Error(result.error || 'Could not load batch details.');
-        }
-
-        setData(result.data);
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Could not connect. Please try again.';
-        setErrorMessage(msg);
-      } finally {
-        setIsLoading(false);
-        setIsRefreshing(false);
-      }
-    },
-    [batchId]
-  );
-
-  useEffect(() => {
-    fetchBatch();
-  }, [fetchBatch]);
-
-  // Handle Start Batch
-  const handleStartBatch = async () => {
-    if (!data || data.batch.hasStarted || isStartingBatch) return;
-
-    try {
-      setIsStartingBatch(true);
-      setErrorMessage(null);
-      setSaveSuccessMessage(null);
-
-      const res = await fetch(`/api/batches/${batchId}/start`, {
-        method: 'POST',
-      });
-      const result = await res.json();
-
-      if (!res.ok || !result.success) {
-        throw new Error(result.error || 'Could not start batch.');
-      }
-
-      setSaveSuccessMessage('Batch started successfully!');
-      // Re-fetch batch to ensure fresh state from Airtable
-      await fetchBatch(true);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Could not start batch.';
-      setErrorMessage(msg);
-    } finally {
-      setIsStartingBatch(false);
-    }
-  };
-
-  // Handle Complete Task
-  const handleTaskCompleted = async (taskId: string) => {
-    setErrorMessage(null);
-    setSaveSuccessMessage(null);
-
-    const res = await fetch(`/api/tasks/${taskId}/complete`, {
-      method: 'POST',
-    });
-    const result = await res.json();
-
-    if (!res.ok || !result.success) {
-      throw new Error(result.error || 'Could not save task.');
-    }
-
-    setSaveSuccessMessage('Saved! Task marked as Done.');
-    // Re-fetch batch to get recalculated Task States and Done counts from Airtable
-    await fetchBatch(true);
-  };
-
-  const batch = data?.batch;
-  const tasks = data?.tasks || [];
-
-  const readyCount = tasks.filter((t) => !t.isLocked && !t.isDone).length;
-  const lockedCount = tasks.filter((t) => t.isLocked).length;
-  const doneCount = tasks.filter((t) => t.isDone).length;
-
-  const filteredTasks = tasks.filter((t) => {
-    if (filterMode === 'ready') return !t.isLocked && !t.isDone;
-    if (filterMode === 'locked') return t.isLocked;
-    if (filterMode === 'done') return t.isDone;
-    return true;
-  });
+  const {
+    batch,
+    tasks,
+    filteredTasks,
+    readyCount,
+    lockedCount,
+    doneCount,
+    isLoading,
+    isRefreshing,
+    isStartingBatch,
+    errorMessage,
+    successMessage,
+    filterMode,
+    setFilterMode,
+    startBatch,
+    completeTask,
+    clearErrorMessage,
+    clearSuccessMessage,
+    refresh,
+    retry,
+  } = useBatchDetails(batchId);
 
   const percent =
     batch && batch.totalTasks > 0
@@ -147,7 +69,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
           </Link>
 
           <button
-            onClick={() => fetchBatch(true)}
+            onClick={refresh}
             disabled={isLoading || isRefreshing}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition shadow-2xs cursor-pointer disabled:opacity-50"
             title="Refresh batch"
@@ -158,14 +80,14 @@ function BatchDetailContent({ params }: BatchPageProps) {
         </div>
 
         {/* Save Notifications */}
-        {saveSuccessMessage && (
+        {successMessage && (
           <div className="mb-3 p-2.5 bg-emerald-50 border border-emerald-300 rounded-lg flex items-center justify-between gap-2 text-xs font-bold text-emerald-900 shadow-2xs">
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-emerald-700 shrink-0 stroke-[3]" />
-              <span>{saveSuccessMessage}</span>
+              <span>{successMessage}</span>
             </div>
             <button
-              onClick={() => setSaveSuccessMessage(null)}
+              onClick={clearSuccessMessage}
               className="text-emerald-700 hover:text-emerald-950 font-black px-1.5 cursor-pointer"
             >
               ×
@@ -180,7 +102,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
               <span>{errorMessage}</span>
             </div>
             <button
-              onClick={() => setErrorMessage(null)}
+              onClick={clearErrorMessage}
               className="text-red-700 hover:text-red-950 font-black px-1.5 cursor-pointer"
             >
               ×
@@ -190,11 +112,11 @@ function BatchDetailContent({ params }: BatchPageProps) {
 
         {isLoading ? (
           <LoadingSkeleton count={4} />
-        ) : !data || !batch ? (
+        ) : !batch ? (
           <ErrorMessage
             title="Batch not found"
             message="Could not find this batch record."
-            onRetry={() => fetchBatch(false)}
+            onRetry={retry}
           />
         ) : (
           <div className="space-y-3.5">
@@ -258,7 +180,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
               </div>
             </div>
 
-            {/* Segmented Filter Control for Phone */}
+            {/* Segmented Filter Control Bar */}
             <div className="sticky top-[52px] z-30 bg-slate-50/95 backdrop-blur-md py-2 -mx-4 px-4 sm:mx-0 sm:px-0">
               <div className="flex items-center justify-between gap-2 mb-1">
                 <h3 className="text-xs font-bold text-slate-700">
@@ -330,8 +252,8 @@ function BatchDetailContent({ params }: BatchPageProps) {
                   <TaskRow
                     key={task.id}
                     task={task}
-                    onTaskCompleted={handleTaskCompleted}
-                    isBatchStarted={batch.hasStarted}
+                    onTaskCompleted={completeTask}
+                    isBatchStarted={Boolean(batch.hasStarted)}
                   />
                 ))}
               </div>
@@ -341,7 +263,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
       </main>
 
       {/* Sticky Mobile Bottom Bar (Thumb Zone) */}
-      {data && batch && (
+      {batch && (
         <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-300 p-3 sm:hidden shadow-lg pb-safe">
           {batch.hasStarted ? (
             <div className="flex items-center justify-between text-xs font-bold text-teal-900 bg-teal-50 px-3.5 py-2.5 rounded-lg border border-teal-200">
@@ -355,7 +277,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
             </div>
           ) : (
             <button
-              onClick={handleStartBatch}
+              onClick={startBatch}
               disabled={isStartingBatch}
               className="w-full min-h-[50px] px-6 py-3 rounded-xl text-sm font-bold bg-teal-600 text-white hover:bg-teal-700 active:bg-teal-800 active:scale-[0.98] transition shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
