@@ -27,8 +27,8 @@ export function BatchCard({ batch }: BatchCardProps) {
     >
       <div className="flex items-start justify-between gap-3 mb-2.5">
         <div>
-          <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest block">
-            Restoration Batch
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+            Batch
           </span>
           <h2 className="text-lg font-black text-slate-900 group-hover:text-teal-800 transition-colors font-mono">
             {batch.name}
@@ -37,23 +37,23 @@ export function BatchCard({ batch }: BatchCardProps) {
         <StatusBadge type="batch-status" value={statusType} />
       </div>
 
-      {/* Started timestamp & procedure metrics */}
+      {/* Started timestamp & task count */}
       <div className="text-xs text-slate-600 mb-4 flex items-center gap-3 flex-wrap">
         {batch.startedAt ? (
           <span className="inline-flex items-center gap-1.5 text-teal-900 font-semibold bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
             <Clock className="w-3.5 h-3.5 text-teal-700" />
-            Started: {new Date(batch.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            Started at {new Date(batch.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1.5 text-amber-800 font-medium bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-            <Clock className="w-3.5 h-3.5 text-amber-600" />
-            Awaiting bench start
+          <span className="inline-flex items-center gap-1.5 text-slate-600 font-medium bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+            <Clock className="w-3.5 h-3.5 text-slate-400" />
+            Not started yet
           </span>
         )}
 
         <span className="inline-flex items-center gap-1 text-slate-600 font-medium">
           <Layers className="w-3.5 h-3.5 text-slate-400" />
-          {batch.totalTasks} procedures
+          {batch.totalTasks} tasks
         </span>
       </div>
 
@@ -61,7 +61,7 @@ export function BatchCard({ batch }: BatchCardProps) {
       <div className="space-y-1.5 mb-3">
         <div className="flex items-center justify-between text-xs font-medium">
           <span className="text-slate-600">
-            Progress: <strong className="text-slate-900 font-bold">{batch.completedTasks}</strong> / <strong className="text-slate-900 font-bold">{batch.totalTasks}</strong> done
+            Progress: <strong className="text-slate-900 font-bold">{batch.completedTasks}</strong> of <strong className="text-slate-900 font-bold">{batch.totalTasks}</strong> done
           </span>
           <span className="font-mono font-bold text-slate-900">{percent}%</span>
         </div>
@@ -79,9 +79,9 @@ export function BatchCard({ batch }: BatchCardProps) {
         </div>
       </div>
 
-      {/* Direct Tap Action Cue (Thumb Zone Target) */}
+      {/* Simple View Tasks Action */}
       <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-teal-700 group-hover:text-teal-900">
-        <span>{batch.hasStarted ? 'Open batch docket' : 'Open & start batch'}</span>
+        <span>View tasks</span>
         <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
       </div>
     </Link>

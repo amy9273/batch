@@ -23,12 +23,12 @@ export default function BatchListPage() {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to load batches');
+        throw new Error(data.error || 'Could not load batches.');
       }
 
       setBatches(data.data);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to connect to Airtable';
+      const msg = err instanceof Error ? err.message : 'Could not connect. Please try again.';
       setError(msg);
     } finally {
       setIsLoading(false);
@@ -40,7 +40,7 @@ export default function BatchListPage() {
     fetchBatches();
   }, [fetchBatches]);
 
-  // Metric summaries
+  // Metric summaries in plain terms
   const totalBatches = batches.length;
   const startedBatches = batches.filter((b) => b.hasStarted).length;
   const completedBatches = batches.filter((b) => b.isCompleted).length;
@@ -49,17 +49,17 @@ export default function BatchListPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col pb-safe">
-      <Header title="SOLE SURGEON" />
+      <Header title="Sole Surgeon" />
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-5 sm:px-6">
         {/* Page Title & Refresh */}
         <div className="flex items-center justify-between gap-3 mb-5">
           <div>
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Today&apos;s Admissions
+              Today&apos;s Batches
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Target schedule for <strong className="font-bold text-slate-900">Ana</strong> • <strong className="font-bold text-slate-900">October 22, 2026</strong>
+            <p className="text-xs text-slate-600 mt-0.5">
+              Batches for <strong className="font-bold text-slate-900">Ana</strong> • <strong className="font-bold text-slate-900">October 22, 2026</strong>
             </p>
           </div>
 
@@ -67,41 +67,40 @@ export default function BatchListPage() {
             onClick={() => fetchBatches(true)}
             disabled={isLoading || isRefreshing}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition shadow-2xs cursor-pointer disabled:opacity-50"
-            title="Refresh batch list from Airtable"
+            title="Refresh batch list"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-teal-600' : ''}`} />
-            <span className="hidden sm:inline">Sync Airtable</span>
-            <span className="sm:hidden">Sync</span>
+            <span>Refresh</span>
           </button>
         </div>
 
-        {/* Triage Metrics Strip */}
+        {/* Clear Everyday Metrics */}
         {!isLoading && !error && batches.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
-            <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
-              <span className="text-[11px] font-semibold text-slate-500 block mb-0.5">
-                Batches Scheduled
+            <div className="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
+              <span className="text-xs font-semibold text-slate-500 block mb-0.5">
+                Total Batches
               </span>
               <span className="text-2xl font-black text-slate-900 font-mono">{totalBatches}</span>
             </div>
 
-            <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
-              <span className="text-[11px] font-semibold text-slate-500 block mb-0.5">
-                Active in Lab
+            <div className="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
+              <span className="text-xs font-semibold text-slate-500 block mb-0.5">
+                Started
               </span>
               <span className="text-2xl font-black text-teal-700 font-mono">{startedBatches}</span>
             </div>
 
-            <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
-              <span className="text-[11px] font-semibold text-slate-500 block mb-0.5">
-                Fully Restored
+            <div className="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
+              <span className="text-xs font-semibold text-slate-500 block mb-0.5">
+                Finished
               </span>
               <span className="text-2xl font-black text-emerald-700 font-mono">{completedBatches}</span>
             </div>
 
-            <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
-              <span className="text-[11px] font-semibold text-slate-500 block mb-0.5">
-                Procedures Done
+            <div className="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
+              <span className="text-xs font-semibold text-slate-500 block mb-0.5">
+                Tasks Done
               </span>
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl font-black text-slate-900 font-mono">{totalCompletedTasks}</span>
@@ -116,7 +115,7 @@ export default function BatchListPage() {
           <LoadingSkeleton count={3} />
         ) : error ? (
           <ErrorMessage
-            title="Unable to connect to Airtable"
+            title="Could not load batches"
             message={error}
             onRetry={() => fetchBatches(false)}
           />
@@ -129,7 +128,7 @@ export default function BatchListPage() {
               No batches found
             </h3>
             <p className="text-xs text-slate-500 mb-4">
-              There are no assigned restoration batches for Ana on October 22, 2026.
+              There are no batches assigned to Ana for October 22, 2026.
             </p>
             <button
               onClick={() => fetchBatches(false)}
@@ -148,7 +147,7 @@ export default function BatchListPage() {
       </main>
 
       <footer className="mt-auto py-4 text-center text-xs text-slate-500 border-t border-slate-200 bg-white">
-        Sole Surgeon Philippines • Workshop Floor Production Control System
+        Sole Surgeon • Shoe &amp; Bag Care System
       </footer>
     </div>
   );

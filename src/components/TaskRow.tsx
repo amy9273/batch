@@ -23,7 +23,7 @@ export function TaskRow({ task, onTaskCompleted }: TaskRowProps) {
       setErrorMessage(null);
       await onTaskCompleted(task.id);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to update task';
+      const msg = err instanceof Error ? err.message : 'Could not save. Please try again.';
       setErrorMessage(msg);
     } finally {
       setIsSubmitting(false);
@@ -34,54 +34,53 @@ export function TaskRow({ task, onTaskCompleted }: TaskRowProps) {
     <div
       className={`p-4 rounded-xl border transition-all ${
         task.isDone
-          ? 'bg-slate-50/80 border-slate-200 opacity-90'
+          ? 'bg-slate-50 border-slate-200'
           : task.isLocked
-          ? 'bg-amber-50/25 border-amber-200'
+          ? 'bg-amber-50/20 border-amber-200'
           : 'bg-white border-slate-300 shadow-2xs hover:border-teal-500'
       }`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
-        {/* Left: Step Sequence & Patient / Procedure Info */}
+        {/* Left: Step Number + Item & Task Name */}
         <div className="flex items-start gap-3 min-w-0 flex-1">
-          {/* Step Sequence Badge */}
+          {/* Step Number Badge */}
           <div
-            className={`w-8 h-8 shrink-0 rounded flex items-center justify-center font-mono font-black text-xs ${
+            className={`px-2 py-1 shrink-0 rounded font-mono font-bold text-xs flex items-center justify-center ${
               task.isDone
                 ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
                 : task.isLocked
                 ? 'bg-slate-100 text-slate-500 border border-slate-300'
-                : 'bg-[#042F2E] text-white shadow-xs'
+                : 'bg-slate-900 text-white shadow-xs'
             }`}
-            title={`Step Sequence #${task.sequence}`}
           >
-            #{task.sequence}
+            Step {task.sequence}
           </div>
 
           <div className="min-w-0 flex-1">
-            {/* Patient Hero Title (Footwear / Bag Model) */}
+            {/* Shoe / Bag Name */}
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span className="text-sm font-black text-slate-900 tracking-tight">
+              <span className="text-base font-bold text-slate-900 tracking-tight">
                 {task.itemName}
               </span>
               {task.itemService && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
                   {task.itemService}
                 </span>
               )}
             </div>
 
-            {/* Surgical Procedure Name */}
-            <p className="text-xs text-slate-700 mb-2.5 font-medium leading-relaxed">
+            {/* Task Description */}
+            <p className="text-xs text-slate-600 mb-2 font-medium">
               {task.name}
             </p>
 
-            {/* Surgical State & Status Indicators */}
+            {/* Simple Status Badges */}
             <div className="flex items-center gap-2 flex-wrap">
               <StatusBadge type="task-state" value={task.taskState} />
               <StatusBadge type="task-status" value={task.status} />
             </div>
 
-            {/* Error Message if Airtable call fails */}
+            {/* Error Message */}
             {errorMessage && (
               <p className="text-xs text-red-700 mt-2 font-bold bg-red-50 p-2 rounded border border-red-200">
                 {errorMessage}
@@ -90,7 +89,7 @@ export function TaskRow({ task, onTaskCompleted }: TaskRowProps) {
           </div>
         </div>
 
-        {/* Right: Tactile Mobile Action Button (Min 48px Tap Height) */}
+        {/* Right: Action Button (Min 48px Tap Height) */}
         <div className="sm:self-center shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
           {task.isDone ? (
             <button
@@ -98,32 +97,36 @@ export function TaskRow({ task, onTaskCompleted }: TaskRowProps) {
               className="w-full sm:w-auto min-h-[48px] px-4 py-2.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center justify-center gap-1.5 cursor-not-allowed opacity-90"
             >
               <Check className="w-4 h-4 text-emerald-700 stroke-[2.5]" />
-              Procedure complete
+              Done
             </button>
           ) : task.isLocked ? (
-            <button
-              disabled
-              title="Locked: Prior item steps must be completed first."
-              className="w-full sm:w-auto min-h-[48px] px-4 py-2.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 border border-slate-300 flex items-center justify-center gap-1.5 cursor-not-allowed"
-            >
-              <Lock className="w-4 h-4 text-amber-700 stroke-[2.5]" />
-              Locked (Awaiting prior step)
-            </button>
+            <div className="flex flex-col items-center sm:items-end gap-1">
+              <button
+                disabled
+                className="w-full sm:w-auto min-h-[48px] px-4 py-2.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 border border-slate-300 flex items-center justify-center gap-1.5 cursor-not-allowed"
+              >
+                <Lock className="w-4 h-4 text-amber-700 stroke-[2.5]" />
+                Locked
+              </button>
+              <span className="text-[10px] text-amber-800 font-semibold">
+                Finish earlier steps first
+              </span>
+            </div>
           ) : (
             <button
               onClick={handleMarkDone}
               disabled={isSubmitting}
-              className="w-full sm:w-auto min-h-[48px] px-5 py-2.5 rounded-lg text-xs font-black bg-teal-600 text-white hover:bg-teal-700 active:bg-teal-800 active:scale-[0.98] transition shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full sm:w-auto min-h-[48px] px-5 py-2.5 rounded-lg text-xs font-bold bg-teal-600 text-white hover:bg-teal-700 active:bg-teal-800 active:scale-[0.98] transition shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Saving to Airtable...
+                  Saving...
                 </>
               ) : (
                 <>
                   <Check className="w-4 h-4 stroke-[3]" />
-                  Mark step done
+                  Mark as Done
                 </>
               )}
             </button>
