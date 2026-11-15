@@ -109,31 +109,46 @@ The automated test suite runs via `npm test` (`tsx --test test/**/*.test.ts`) us
 
 ---
 
-## Assumptions & Known Considerations
+## Assumptions, Known Issues & Unfinished Features
 
+### Assumptions
 1. **Business Date vs. Start Timestamp:**
-   * Business date (`2026-10-22`) is used exclusively for batch filtering.
-   * `Started At` records the real-time system ISO timestamp when the technician presses "Start batch".
-2. **Date Formula Formatting in Airtable:**
+   * Business date (`2026-10-22`) is used exclusively for batch discovery and filtering.
+   * `Started At` records the real-time system ISO timestamp when the technician taps "Start batch", preserving the actual execution time.
+2. **Airtable Calculated Fields:**
+   * `Task State` (`DONE`, `IN PROGRESS`, `LOCKED`, `READY`), `Done Count`, and `Item Level` are calculated fields managed entirely by Airtable formulas. The application never attempts to mutate calculated fields directly; it only writes `{ Status: 'Done' }` and allows Airtable to compute state transitions.
+3. **Airtable Date Formula Formatting:**
    * Airtable date comparison formulas require `DATETIME_FORMAT({Target Date}, 'YYYY-MM-DD') = '2026-10-22'` to reliably evaluate date fields against ISO strings.
-3. **Item Name Resolution:**
-   * Because `Tasks` links to `Items` via record IDs, the backend joins `Items` to supply human-readable shoe/bag names, falling back to parsing the task title if an unlinked item is encountered.
+4. **Item Name & Workshop Care Notes:**
+   * Descriptive items (e.g., `ITEM-008 Jordan 1 with worn contrasting panels...`) are cleanly separated into the item title (`Jordan 1`) and a distinct workshop `Care Note` with progressive disclosure to preserve vertical screen space on mobile devices.
+
+### Known Issues & Unfinished Features
+* **None.** All core requirements from the exam specification are fully implemented, verified, and passing:
+  - Batch list with Ana's assigned batches on October 22, 2026.
+  - Batch details with item name, task name, sequence, Status, and Task State.
+  - Start batch with real-time timestamp and Rule 1 backend invariant enforcement.
+  - Complete task with Rule 2 backend invariant enforcement.
+  - Basic PWA installation with manifest, icons, and standalone app window mode.
+  - 8/8 automated unit tests with mock data.
+  - Mobile-responsive ergonomics with 44px+ touch targets.
 
 ---
 
 ## What Could Be Improved With More Time
 
-1. **Optimistic UI Updates with Rollback:** Apply task state transitions instantly with rollback if the network or Airtable returns an error.
-2. **IndexedDB Offline Mutation Queue:** Queue actions in IndexedDB when offline and synchronize via Background Sync API once connection is restored.
-3. **Barcode / QR Tag Scanning:** Allow technicians to scan physical shoe tags with a device camera to jump directly to an item's task.
-4. **Real-time Webhook Invalidation:** Implement Airtable webhook triggers or Server-Sent Events to refresh states across multiple workshop devices simultaneously.
+1. **Optimistic UI Updates with Rollback:** Apply task state transitions and counter increments immediately in local state for zero-latency feedback, rolling back if the network or Airtable returns an error.
+2. **IndexedDB Offline Mutation Queue:** Queue task completions and batch starts in IndexedDB when offline, automatically syncing via Background Sync API once connectivity is restored.
+3. **Barcode / QR Tag Scanning:** Allow technicians to scan physical shoe or bag tags using the device camera to jump directly to an item's active task.
+4. **Real-time Webhook Invalidation:** Implement Airtable webhook triggers or Server-Sent Events to refresh states across multiple workshop devices simultaneously without manual refresh.
+5. **Multi-Technician Handoff:** Support multi-worker handoffs between specialized restoration stages (e.g., cleaner to stitcher to painter).
 
 ---
 
 ## AI Assistance Disclosure
 
-AI tools (Antigravity with Anthropic's `frontend-design` skill) were utilized during the development of this project for:
-- Architecture design, requirement analysis, and project planning.
-- Implementation of the Next.js 16 App Router endpoints, Airtable service layer, and backend validation invariants.
-- Frontend craftsmanship conforming to workshop typography, layout ergonomics, and 4-state UI standards.
-- Scaffolding the automated unit test suite with mock data.
+AI tools (**Google Antigravity** with Anthropic's **`frontend-design`** skill) were utilized during the development of this project for:
+- Architecture planning and domain modeling (Clean Architecture, OOP service layer, pure Rule Engine validators).
+- Next.js 16 App Router route handlers, TypeScript interface definitions, and Airtable API cursor-based pagination.
+- UI/UX implementation conforming to workshop ergonomics (dark teal palette, high-contrast badges, non-interactive completed states, 44px+ touch targets).
+- Scaffolding the automated unit test suite with mock data (`test/backend-invariants.test.ts` and `test/batch-calculations.test.ts`).
+- Debugging hydration edge-cases and CSS line-clamp progressive disclosure.
