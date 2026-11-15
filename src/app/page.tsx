@@ -21,6 +21,19 @@ export default function BatchListPage() {
   const tasksCompleted = batches.reduce((acc, b) => acc + b.completedTasks, 0);
   const tasksRemaining = Math.max(0, totalTasks - tasksCompleted);
 
+  // Operational Priority Sorting (Reviewer Recommendation):
+  // 1. In Progress (urgently needs work)
+  // 2. Not Started (pending work)
+  // 3. Finished (already done)
+  const sortedBatches = [...batches].sort((a, b) => {
+    const getPriority = (batch: typeof a) => {
+      if (batch.hasStarted && !batch.isCompleted) return 1; // In Progress
+      if (!batch.hasStarted && !batch.isCompleted) return 2; // Not Started
+      return 3; // Finished
+    };
+    return getPriority(a) - getPriority(b);
+  });
+
   if (!isMounted) {
     return null;
   }
@@ -37,7 +50,7 @@ export default function BatchListPage() {
               My Batches
             </h2>
             <p className="text-xs sm:text-sm text-[#64748B] mt-0.5">
-              Your assigned production batches for October 22, 2026
+              Thursday, October 22, 2026
             </p>
           </div>
 
@@ -54,27 +67,32 @@ export default function BatchListPage() {
 
         {/* Compact Summary Metrics (Spec: Total Batches, Tasks Completed, Tasks Remaining) */}
         {!isLoading && !error && batches.length > 0 && (
-          <div className="grid grid-cols-3 gap-2.5 mb-5">
-            <div className="bg-white p-3.5 rounded-xl border border-[#E2E8F0] shadow-2xs">
-              <span className="text-xs font-semibold text-[#64748B] block mb-0.5">
-                Total Batches
-              </span>
-              <span className="text-2xl font-black text-[#111827] font-mono">{totalBatches}</span>
-            </div>
+          <div className="mb-5">
+            <div className="grid grid-cols-3 gap-2.5">
+              <div className="bg-white p-3.5 rounded-xl border border-[#E2E8F0] shadow-2xs">
+                <span className="text-xs font-semibold text-[#64748B] block mb-0.5 truncate">
+                  Batches
+                </span>
+                <span className="text-2xl font-black text-[#111827] font-mono">{totalBatches}</span>
+              </div>
 
-            <div className="bg-white p-3.5 rounded-xl border border-[#E2E8F0] shadow-2xs">
-              <span className="text-xs font-semibold text-[#64748B] block mb-0.5">
-                Tasks Completed
-              </span>
-              <span className="text-2xl font-black text-[#047857] font-mono">{tasksCompleted}</span>
-            </div>
+              <div className="bg-white p-3.5 rounded-xl border border-[#E2E8F0] shadow-2xs">
+                <span className="text-xs font-semibold text-[#64748B] block mb-0.5 truncate">
+                  Completed
+                </span>
+                <span className="text-2xl font-black text-[#047857] font-mono">{tasksCompleted}</span>
+              </div>
 
-            <div className="bg-white p-3.5 rounded-xl border border-[#E2E8F0] shadow-2xs">
-              <span className="text-xs font-semibold text-[#64748B] block mb-0.5">
-                Tasks Remaining
-              </span>
-              <span className="text-2xl font-black text-[#111827] font-mono">{tasksRemaining}</span>
+              <div className="bg-white p-3.5 rounded-xl border border-[#E2E8F0] shadow-2xs">
+                <span className="text-xs font-semibold text-[#64748B] block mb-0.5 truncate">
+                  Remaining
+                </span>
+                <span className="text-2xl font-black text-[#111827] font-mono">{tasksRemaining}</span>
+              </div>
             </div>
+            <p className="text-[11px] text-[#64748B] mt-1.5 px-0.5">
+              Across all assigned batches for today
+            </p>
           </div>
         )}
 
@@ -107,7 +125,7 @@ export default function BatchListPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-            {batches.map((batch) => (
+            {sortedBatches.map((batch) => (
               <BatchCard key={batch.id} batch={batch} />
             ))}
           </div>

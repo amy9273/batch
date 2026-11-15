@@ -26,10 +26,10 @@ export function BatchCard({ batch }: BatchCardProps) {
   return (
     <Link
       href={`/batches/${batch.id}`}
-      className="block group bg-white rounded-xl p-5 border border-[#E2E8F0] shadow-2xs hover:border-[#009B83] transition-all active:scale-[0.985]"
+      className="block group bg-white rounded-xl p-4 sm:p-5 border border-[#E2E8F0] shadow-2xs hover:border-[#009B83] transition-all active:scale-[0.985]"
     >
       {/* Top section: Batch name & Status badge */}
-      <div className="flex items-start justify-between gap-3 mb-2.5">
+      <div className="flex items-start justify-between gap-3 mb-2">
         <div>
           <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider block">
             BATCH
@@ -42,7 +42,7 @@ export function BatchCard({ batch }: BatchCardProps) {
       </div>
 
       {/* Middle section: Worker, Target Date & Started status */}
-      <div className="text-xs text-[#64748B] mb-3 space-y-1">
+      <div className="text-xs text-[#64748B] mb-2.5 space-y-1">
         <div>
           Worker: <strong className="text-[#111827] font-semibold">{batch.worker}</strong>
         </div>
@@ -66,7 +66,7 @@ export function BatchCard({ batch }: BatchCardProps) {
       </div>
 
       {/* Progress Bar & Percentage */}
-      <div className="space-y-1.5 mb-3 pt-2 border-t border-slate-100">
+      <div className="space-y-1.5 mb-2.5 pt-2 border-t border-slate-100">
         <div className="flex items-center justify-between text-xs font-medium">
           <span className="text-[#64748B]">
             Progress: <strong className="text-[#111827] font-bold">{batch.completedTasks}</strong> of <strong className="text-[#111827] font-bold">{batch.totalTasks}</strong> tasks completed
