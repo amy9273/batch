@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Check, Loader2, Lock } from 'lucide-react';
 import { TaskDetail } from '@/types/airtable';
-import { StatusBadge } from './StatusBadge';
 
 interface TaskRowProps {
   task: TaskDetail;
@@ -30,22 +29,28 @@ export function TaskRow({ task, onTaskCompleted }: TaskRowProps) {
     }
   };
 
+  // Clean task title so it doesn't repeat the shoe name at the end
+  let cleanTaskName = task.name;
+  if (task.itemName && cleanTaskName.endsWith(` - ${task.itemName}`)) {
+    cleanTaskName = cleanTaskName.slice(0, -(task.itemName.length + 3));
+  }
+
   return (
     <div
-      className={`p-4 rounded-xl border transition-all ${
+      className={`p-3.5 sm:p-4 rounded-xl border transition-all ${
         task.isDone
-          ? 'bg-slate-50 border-slate-200'
+          ? 'bg-emerald-50/20 border-emerald-200/80'
           : task.isLocked
           ? 'bg-amber-50/20 border-amber-200'
           : 'bg-white border-slate-300 shadow-2xs hover:border-teal-500'
       }`}
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
-        {/* Left: Step Number + Item & Task Name */}
-        <div className="flex items-start gap-3 min-w-0 flex-1">
+      <div className="flex items-start justify-between gap-3">
+        {/* Left: Step Index + Shoe & Task Info */}
+        <div className="flex items-start gap-2.5 min-w-0 flex-1">
           {/* Step Number Badge */}
           <div
-            className={`px-2 py-1 shrink-0 rounded font-mono font-bold text-xs flex items-center justify-center ${
+            className={`w-7 h-7 shrink-0 rounded font-mono font-bold text-xs flex items-center justify-center mt-0.5 ${
               task.isDone
                 ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
                 : task.isLocked
@@ -53,31 +58,54 @@ export function TaskRow({ task, onTaskCompleted }: TaskRowProps) {
                 : 'bg-slate-900 text-white shadow-xs'
             }`}
           >
-            Step {task.sequence}
+            {task.sequence}
           </div>
 
           <div className="min-w-0 flex-1">
-            {/* Shoe / Bag Name */}
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span className="text-base font-bold text-slate-900 tracking-tight">
+            {/* Shoe / Bag Name + Service Tag */}
+            <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+              <span className="text-sm font-bold text-slate-900 tracking-tight">
                 {task.itemName}
               </span>
               {task.itemService && (
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
                   {task.itemService}
                 </span>
               )}
             </div>
 
-            {/* Task Description */}
+            {/* Clean Task Description */}
             <p className="text-xs text-slate-600 mb-2 font-medium">
-              {task.name}
+              {cleanTaskName}
             </p>
 
-            {/* Simple Status Badges */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <StatusBadge type="task-state" value={task.taskState} />
-              <StatusBadge type="task-status" value={task.status} />
+            {/* Clear, Non-Duplicated Status & State Display */}
+            <div className="flex items-center gap-2 flex-wrap text-[11px]">
+              {task.isDone ? (
+                <span className="inline-flex items-center gap-1 font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">
+                  <Check className="w-3 h-3 stroke-[3]" />
+                  Status: Done
+                </span>
+              ) : task.isLocked ? (
+                <>
+                  <span className="inline-flex items-center gap-1 font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded border border-amber-300">
+                    <Lock className="w-3 h-3 stroke-[2.5]" />
+                    State: Locked
+                  </span>
+                  <span className="text-slate-500 font-medium">
+                    (Finish Step {Math.max(1, task.sequence - 1)} first)
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="inline-flex items-center gap-1 font-bold text-teal-900 bg-teal-100 px-2 py-0.5 rounded border border-teal-300">
+                    State: Ready
+                  </span>
+                  <span className="text-slate-500 font-medium">
+                    Status: {task.status}
+                  </span>
+                </>
+              )}
             </div>
 
             {/* Error Message */}
@@ -89,43 +117,32 @@ export function TaskRow({ task, onTaskCompleted }: TaskRowProps) {
           </div>
         </div>
 
-        {/* Right: Action Button (Min 48px Tap Height) */}
-        <div className="sm:self-center shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+        {/* Right: Clean Action Area (Compact on Done, Big on Ready) */}
+        <div className="shrink-0 flex items-center self-center sm:self-auto">
           {task.isDone ? (
-            <button
-              disabled
-              className="w-full sm:w-auto min-h-[48px] px-4 py-2.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center justify-center gap-1.5 cursor-not-allowed opacity-90"
-            >
-              <Check className="w-4 h-4 text-emerald-700 stroke-[2.5]" />
-              Done
-            </button>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-800 bg-emerald-100/70 border border-emerald-300">
+              <Check className="w-3.5 h-3.5 text-emerald-700 stroke-[3]" />
+              <span>Completed</span>
+            </div>
           ) : task.isLocked ? (
-            <div className="flex flex-col items-center sm:items-end gap-1">
-              <button
-                disabled
-                className="w-full sm:w-auto min-h-[48px] px-4 py-2.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 border border-slate-300 flex items-center justify-center gap-1.5 cursor-not-allowed"
-              >
-                <Lock className="w-4 h-4 text-amber-700 stroke-[2.5]" />
-                Locked
-              </button>
-              <span className="text-[10px] text-amber-800 font-semibold">
-                Finish earlier steps first
-              </span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-400 bg-slate-100 border border-slate-200 cursor-not-allowed">
+              <Lock className="w-3.5 h-3.5 text-slate-400" />
+              <span>Locked</span>
             </div>
           ) : (
             <button
               onClick={handleMarkDone}
               disabled={isSubmitting}
-              className="w-full sm:w-auto min-h-[48px] px-5 py-2.5 rounded-lg text-xs font-bold bg-teal-600 text-white hover:bg-teal-700 active:bg-teal-800 active:scale-[0.98] transition shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="min-h-[44px] px-4 py-2 rounded-lg text-xs font-bold bg-teal-600 text-white hover:bg-teal-700 active:bg-teal-800 active:scale-[0.98] transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   Saving...
                 </>
               ) : (
                 <>
-                  <Check className="w-4 h-4 stroke-[3]" />
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
                   Mark as Done
                 </>
               )}

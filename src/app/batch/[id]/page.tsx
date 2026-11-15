@@ -135,9 +135,9 @@ function BatchDetailContent({ params }: BatchPageProps) {
     <div className="min-h-screen bg-slate-50 flex flex-col pb-24 sm:pb-8">
       <Header title="Sole Surgeon" showBack />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-4 sm:px-6">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-3.5 sm:px-6">
         {/* Navigation & Refresh Bar */}
-        <div className="flex items-center justify-between gap-3 mb-3.5">
+        <div className="flex items-center justify-between gap-3 mb-3">
           <Link
             href="/"
             className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 transition bg-white px-3 py-1.5 rounded-lg border border-slate-300 shadow-2xs"
@@ -159,14 +159,14 @@ function BatchDetailContent({ params }: BatchPageProps) {
 
         {/* Save Notifications */}
         {saveSuccessMessage && (
-          <div className="mb-3.5 p-3 bg-emerald-50 border border-emerald-300 rounded-lg flex items-center justify-between gap-2 text-xs font-bold text-emerald-900 shadow-2xs">
+          <div className="mb-3 p-2.5 bg-emerald-50 border border-emerald-300 rounded-lg flex items-center justify-between gap-2 text-xs font-bold text-emerald-900 shadow-2xs">
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-emerald-700 shrink-0 stroke-[3]" />
               <span>{saveSuccessMessage}</span>
             </div>
             <button
               onClick={() => setSaveSuccessMessage(null)}
-              className="text-emerald-700 hover:text-emerald-950 font-black px-1 cursor-pointer"
+              className="text-emerald-700 hover:text-emerald-950 font-black px-1.5 cursor-pointer"
             >
               ×
             </button>
@@ -174,14 +174,14 @@ function BatchDetailContent({ params }: BatchPageProps) {
         )}
 
         {errorMessage && (
-          <div className="mb-3.5 p-3 bg-red-50 border border-red-300 rounded-lg flex items-center justify-between gap-2 text-xs font-bold text-red-900 shadow-2xs">
+          <div className="mb-3 p-2.5 bg-red-50 border border-red-300 rounded-lg flex items-center justify-between gap-2 text-xs font-bold text-red-900 shadow-2xs">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-red-700 shrink-0" />
               <span>{errorMessage}</span>
             </div>
             <button
               onClick={() => setErrorMessage(null)}
-              className="text-red-700 hover:text-red-950 font-black px-1 cursor-pointer"
+              className="text-red-700 hover:text-red-950 font-black px-1.5 cursor-pointer"
             >
               ×
             </button>
@@ -197,77 +197,57 @@ function BatchDetailContent({ params }: BatchPageProps) {
             onRetry={() => fetchBatch(false)}
           />
         ) : (
-          <div className="space-y-4">
-            {/* Batch Details Card */}
-            <div className="bg-white rounded-xl p-4 sm:p-5 border border-slate-300 shadow-2xs">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3.5 pb-3.5 border-b border-slate-100">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                      Batch Details
-                    </span>
-                    <StatusBadge
-                      type="batch-status"
-                      value={
-                        batch.isCompleted
-                          ? 'Completed'
-                          : batch.hasStarted
-                          ? 'In Progress'
-                          : 'Not Started'
-                      }
-                    />
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-mono">
+          <div className="space-y-3.5">
+            {/* Compact Mobile-Optimized Batch Header Card */}
+            <div className="bg-white rounded-xl p-3.5 sm:p-4 border border-slate-300 shadow-2xs">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    Batch
+                  </span>
+                  <h2 className="text-xl font-black text-slate-900 font-mono tracking-tight">
                     {batch.name}
                   </h2>
-                  <p className="text-xs text-slate-600 mt-1 font-medium">
-                    Worker: <span className="font-bold text-slate-900">{batch.worker}</span> • Date: <span className="font-bold text-slate-900">{batch.targetDate}</span>
-                  </p>
+                </div>
+                <StatusBadge
+                  type="batch-status"
+                  value={
+                    batch.isCompleted
+                      ? 'Completed'
+                      : batch.hasStarted
+                      ? 'In Progress'
+                      : 'Not Started'
+                  }
+                />
+              </div>
+
+              {/* Status & Timing Line */}
+              <div className="flex items-center justify-between text-xs text-slate-600 mb-2.5 flex-wrap gap-2">
+                <div>
+                  Worker: <strong className="text-slate-900">{batch.worker}</strong> • Date: <strong className="text-slate-900">{batch.targetDate}</strong>
                 </div>
 
-                {/* Desktop Action Area */}
-                <div className="hidden sm:block sm:self-center shrink-0">
-                  {batch.hasStarted ? (
-                    <div className="flex flex-col items-end">
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-teal-50 text-teal-900 border border-teal-300">
-                        <Check className="w-3.5 h-3.5 text-teal-700 stroke-[2.5]" />
-                        <span>Started at {new Date(batch.startedAt!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                      </div>
-                      <span className="text-[11px] text-slate-500 mt-1">
-                        Batch is active
-                      </span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={handleStartBatch}
-                      disabled={isStartingBatch}
-                      className="min-h-[46px] px-5 py-2.5 rounded-lg text-xs font-bold bg-teal-600 text-white hover:bg-teal-700 active:bg-teal-800 transition shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                    >
-                      {isStartingBatch ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Starting batch...
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-3.5 h-3.5 fill-white" />
-                          Start batch
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
+                {batch.startedAt ? (
+                  <span className="inline-flex items-center gap-1 font-semibold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                    <Clock className="w-3 h-3 text-teal-600" />
+                    Started at {new Date(batch.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                ) : (
+                  <span className="text-slate-500 font-medium">
+                    Not started yet
+                  </span>
+                )}
               </div>
 
               {/* Progress Summary */}
-              <div className="pt-3.5 space-y-1.5">
+              <div className="space-y-1 pt-1 border-t border-slate-100">
                 <div className="flex items-center justify-between text-xs font-medium">
                   <span className="text-slate-600">
-                    Tasks: <strong className="text-slate-900 font-bold">{batch.completedTasks}</strong> of <strong className="text-slate-900 font-bold">{batch.totalTasks}</strong> done
+                    Progress: <strong className="text-slate-900 font-bold">{batch.completedTasks}</strong> of <strong className="text-slate-900 font-bold">{batch.totalTasks}</strong> tasks done
                   </span>
                   <span className="font-mono font-bold text-slate-900">{percent}%</span>
                 </div>
-                <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                   <div
                     className={`h-full transition-all duration-300 rounded-full ${
                       batch.isCompleted ? 'bg-emerald-600' : 'bg-teal-600'
@@ -278,10 +258,10 @@ function BatchDetailContent({ params }: BatchPageProps) {
               </div>
             </div>
 
-            {/* Mobile Task Filter Buttons */}
-            <div className="sticky top-[53px] z-30 bg-slate-50/95 backdrop-blur-md py-2 -mx-4 px-4 sm:mx-0 sm:px-0 border-y sm:border-y-0 border-slate-200/80">
-              <div className="flex items-center justify-between gap-2 mb-1.5">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+            {/* Segmented Filter Control for Phone */}
+            <div className="sticky top-[52px] z-30 bg-slate-50/95 backdrop-blur-md py-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <h3 className="text-xs font-bold text-slate-700">
                   Tasks ({tasks.length})
                 </h3>
                 {readyCount > 0 && (
@@ -292,44 +272,44 @@ function BatchDetailContent({ params }: BatchPageProps) {
                 )}
               </div>
 
-              {/* Filter Tabs in Simple English */}
-              <div className="grid grid-cols-4 gap-1.5 text-xs font-bold">
+              {/* Segmented Control Bar */}
+              <div className="grid grid-cols-4 gap-1.5 bg-slate-200/70 p-1 rounded-lg text-xs font-bold">
                 <button
                   onClick={() => setFilterMode('all')}
-                  className={`py-2 px-1 text-center rounded-lg transition-all cursor-pointer ${
+                  className={`py-1.5 px-1 text-center rounded-md transition-all cursor-pointer ${
                     filterMode === 'all'
-                      ? 'bg-slate-900 text-white shadow-xs'
-                      : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-300'
+                      ? 'bg-white text-slate-900 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   All ({tasks.length})
                 </button>
                 <button
                   onClick={() => setFilterMode('ready')}
-                  className={`py-2 px-1 text-center rounded-lg transition-all cursor-pointer ${
+                  className={`py-1.5 px-1 text-center rounded-md transition-all cursor-pointer ${
                     filterMode === 'ready'
-                      ? 'bg-teal-700 text-white shadow-xs'
-                      : 'bg-white text-teal-900 hover:bg-teal-50 border border-teal-300'
+                      ? 'bg-teal-600 text-white shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Ready ({readyCount})
                 </button>
                 <button
                   onClick={() => setFilterMode('locked')}
-                  className={`py-2 px-1 text-center rounded-lg transition-all cursor-pointer ${
+                  className={`py-1.5 px-1 text-center rounded-md transition-all cursor-pointer ${
                     filterMode === 'locked'
-                      ? 'bg-amber-700 text-white shadow-xs'
-                      : 'bg-white text-amber-900 hover:bg-amber-50 border border-amber-300'
+                      ? 'bg-amber-600 text-white shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Locked ({lockedCount})
                 </button>
                 <button
                   onClick={() => setFilterMode('done')}
-                  className={`py-2 px-1 text-center rounded-lg transition-all cursor-pointer ${
+                  className={`py-1.5 px-1 text-center rounded-md transition-all cursor-pointer ${
                     filterMode === 'done'
-                      ? 'bg-emerald-700 text-white shadow-xs'
-                      : 'bg-white text-emerald-900 hover:bg-emerald-50 border border-emerald-300'
+                      ? 'bg-emerald-600 text-white shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Done ({doneCount})
@@ -345,7 +325,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
                 </p>
               </div>
             ) : (
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {filteredTasks.map((task) => (
                   <TaskRow
                     key={task.id}
