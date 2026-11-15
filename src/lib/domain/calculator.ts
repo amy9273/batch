@@ -97,7 +97,8 @@ export class BatchMetricsCalculator {
       const withKeywordIndex = rawItemName.indexOf(' with ');
       if (withKeywordIndex !== -1) {
         itemName = rawItemName.substring(0, withKeywordIndex).trim();
-        itemNotes = rawItemName.substring(withKeywordIndex + 1).trim();
+        const extracted = rawItemName.substring(withKeywordIndex + 1).trim();
+        itemNotes = extracted.charAt(0).toUpperCase() + extracted.slice(1);
       }
 
       const isDone = t.fields.Status === 'Done' || t.fields['Task State'] === 'DONE';

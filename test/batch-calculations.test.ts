@@ -201,6 +201,6 @@ describe('Batch Calculations & Filtering Tests (Mock Data)', () => {
     };
     const mappedDesc = BatchMetricsCalculator.mapTaskDetails([descriptiveTask], itemsMap);
     assert.equal(mappedDesc[0].itemName, 'Jordan 1');
-    assert.match(mappedDesc[0].itemNotes || '', /with worn contrasting panels/);
+    assert.match(mappedDesc[0].itemNotes || '', /with worn contrasting panels/i);
   });
 });

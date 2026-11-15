@@ -10,6 +10,67 @@ interface TaskRowProps {
   isBatchStarted: boolean;
 }
 
+interface CareNoteProps {
+  note: string;
+}
+
+/**
+ * Workshop Care Note: Displays special handling instructions with a responsive layout
+ * (vertical on mobile for 100% instruction width, horizontal on desktop) and hybrid expansion.
+ */
+function CareNote({ note }: CareNoteProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  // Notes exceeding ~110 characters generally occupy more than 3-4 lines on mobile screens
+  const isLong = note.length > 110 || note.split('\n').length > 3;
+
+  return (
+    <div className="my-1.5 p-2 sm:p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-950 flex flex-col sm:flex-row sm:items-start gap-1.5 sm:gap-2">
+      {/* Label: Above instructions on mobile to maximize reading width; inline on desktop */}
+      <div className="shrink-0 flex items-center">
+        <span className="font-bold text-amber-900 bg-amber-200/80 px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider select-none">
+          Care Note
+        </span>
+      </div>
+
+      {/* Instructions: Gets full available width on mobile for easier reading */}
+      <div className="min-w-0 flex-1">
+        <p
+          className={`font-medium text-amber-900 leading-snug break-words ${
+            isLong && !isExpanded ? 'line-clamp-3' : ''
+          }`}
+          style={
+            isLong && !isExpanded
+              ? {
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }
+              : undefined
+          }
+        >
+          {note}
+        </p>
+
+        {isLong && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              setIsExpanded((prev) => !prev);
+            }}
+            className="mt-1 text-[11px] font-bold text-amber-800 hover:text-amber-950 underline underline-offset-2 inline-flex items-center gap-0.5 cursor-pointer select-none transition-colors"
+            aria-expanded={isExpanded}
+          >
+            {isExpanded ? 'Show less' : 'Show more'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function TaskRow({ task, onTaskCompleted }: TaskRowProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -186,16 +247,7 @@ export function TaskRow({ task, onTaskCompleted }: TaskRowProps) {
             </p>
 
             {/* Special Handling / Workshop Care Note */}
-            {task.itemNotes && (
-              <div className="my-1.5 p-2 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-950 flex items-start gap-1.5">
-                <span className="shrink-0 font-bold text-amber-900 bg-amber-200/80 px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider">
-                  Care Note
-                </span>
-                <span className="font-medium text-amber-900 leading-snug">
-                  {task.itemNotes}
-                </span>
-              </div>
-            )}
+            {task.itemNotes && <CareNote note={task.itemNotes} />}
 
             {/* Independent Status & Task State display (Exam Spec Section 5) */}
             <div className="flex items-center gap-2 text-[11px] text-[#64748B] flex-wrap mt-1">
