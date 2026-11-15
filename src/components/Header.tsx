@@ -14,8 +14,8 @@ export function Header({ title = 'Sole Surgeon' }: HeaderProps) {
   const { isInstallable, installPWA } = usePWA();
 
   return (
-    <header className="sticky top-0 z-40 bg-[#042F2E] text-white border-b border-teal-900/60 shadow-md">
-      <div className="max-w-4xl mx-auto px-4 py-2.5 sm:px-6">
+    <header className="sticky top-0 z-40 bg-[#042F2E] text-white border-b border-teal-900/60 shadow-md" suppressHydrationWarning>
+      <div className="max-w-4xl mx-auto px-4 py-2 sm:py-2.5">
         <div className="flex items-center justify-between gap-3">
           {/* Logo & Brand Identity */}
           <Link href="/" className="flex items-center gap-2.5 group">

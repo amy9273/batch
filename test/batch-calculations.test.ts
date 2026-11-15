@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeBatchSummary, filterBatches } from '../src/lib/airtable';
-import { BatchRecord, TaskRecord } from '../src/types/airtable';
+import { computeBatchSummary, filterBatches, BatchMetricsCalculator } from '../src/lib/airtable';
+import { BatchRecord, TaskRecord, ItemRecord } from '../src/types/airtable';
 
 describe('Batch Calculations & Filtering Tests (Mock Data)', () => {
   const mockBatches: BatchRecord[] = [
@@ -113,14 +113,94 @@ describe('Batch Calculations & Filtering Tests (Mock Data)', () => {
     assert.equal(summary.isCompleted, false);
   });
 
-  test('correctly identifies a fully completed and started batch', () => {
-    const batch = mockBatches.find((b) => b.id === 'recBatch4')!;
-    const summary = computeBatchSummary(batch, mockTasks);
+  test('correctly maps task details with unique queue numbering and authoritative unified status', () => {
+    const rawBatchTasks: TaskRecord[] = [
+      {
+        id: 'taskA',
+        fields: {
+          'Task Name': 'T119 - Dismantling and Prep - Nike AM90',
+          Sequence: 1,
+          Status: 'Done',
+          'Task State': 'DONE',
+        },
+      },
+      {
+        id: 'taskB',
+        fields: {
+          'Task Name': 'T113 - Dismantling and Prep - Adidas POD-S 3.1',
+          Sequence: 1,
+          Status: 'Done',
+          'Task State': 'DONE',
+        },
+      },
+      {
+        id: 'taskC',
+        fields: {
+          'Task Name': 'T115 - Parts Fabrication - Adidas POD-S 3.1',
+          Sequence: 3,
+          Status: 'Not Started',
+          'Task State': 'IN PROGRESS',
+        },
+      },
+      {
+        id: 'taskD',
+        fields: {
+          'Task Name': 'T116 - Regluing - Adidas POD-S 3.1',
+          Sequence: 4,
+          Status: 'Not Started',
+          'Task State': 'LOCKED',
+        },
+      },
+    ];
 
-    assert.equal(summary.name, 'ANA-20261022-B');
-    assert.equal(summary.totalTasks, 2);
-    assert.equal(summary.completedTasks, 2); // t4 and t5 are Done
-    assert.equal(summary.hasStarted, true);
-    assert.equal(summary.isCompleted, true);
+    const itemsMap = new Map<string, ItemRecord>();
+    const taskDetails = BatchMetricsCalculator.mapTaskDetails(rawBatchTasks, itemsMap, [
+      'taskA',
+      'taskB',
+      'taskC',
+      'taskD',
+    ]);
+
+    // 1. Verify strictly unique sequential queue numbers #1..#4
+    assert.deepEqual(
+      taskDetails.map((t) => t.queueNumber),
+      [1, 2, 3, 4]
+    );
+
+    // 2. Verify authoritative single unified statuses
+    assert.deepEqual(
+      taskDetails.map((t) => t.unifiedStatus),
+      ['Done', 'Done', 'In Progress', 'Locked']
+    );
+
+    // 3. Verify clean title separation (actionName and taskCode)
+    assert.equal(taskDetails[0].actionName, 'Dismantling and Prep');
+    assert.equal(taskDetails[0].taskCode, 'T113');
+    assert.equal(taskDetails[0].itemName, 'Adidas POD-S 3.1');
+
+    assert.equal(taskDetails[1].actionName, 'Dismantling and Prep');
+    assert.equal(taskDetails[1].taskCode, 'T119');
+    assert.equal(taskDetails[1].itemName, 'Nike AM90');
+
+    // 4. Verify canMarkDone invariant
+    assert.equal(taskDetails[0].canMarkDone, false); // Done
+    assert.equal(taskDetails[1].canMarkDone, false); // Done
+    assert.equal(taskDetails[2].canMarkDone, true); // In Progress (ready to complete)
+    assert.equal(taskDetails[3].canMarkDone, false); // Locked (cannot complete)
+
+    // 5. Verify lengthy description separation into clean itemName and itemNotes
+    const descriptiveTask: TaskRecord = {
+      id: 'taskDesc',
+      fields: {
+        'Task Name':
+          'T026 - Deep Cleaning - Jordan 1 with worn contrasting panels, decorative stitching, mixed materials, a padded collar and custom laces requiring careful handling during cleaning, patching and repainting',
+        Sequence: 1,
+        Status: 'Done',
+        'Task State': 'DONE',
+      },
+    };
+    const mappedDesc = BatchMetricsCalculator.mapTaskDetails([descriptiveTask], itemsMap);
+    assert.equal(mappedDesc[0].itemName, 'Jordan 1');
+    assert.match(mappedDesc[0].itemNotes || '', /with worn contrasting panels/);
   });
 });

@@ -57,7 +57,11 @@ export class BatchService {
     const batchTaskIds = new Set(batch.fields.Tasks || []);
     const batchTasks = allTasks.filter((t) => batchTaskIds.has(t.id));
 
-    const taskDetails = BatchMetricsCalculator.mapTaskDetails(batchTasks, itemsMap);
+    const taskDetails = BatchMetricsCalculator.mapTaskDetails(
+      batchTasks,
+      itemsMap,
+      batch.fields.Tasks
+    );
     const batchSummary = BatchMetricsCalculator.computeBatchSummary(batch, allTasks);
 
     return {

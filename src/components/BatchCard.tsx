@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Clock, Layers, ArrowRight } from 'lucide-react';
 import { BatchSummary } from '@/types/airtable';
 import { StatusBadge } from './StatusBadge';
+import { formatBatchTime } from '@/lib/utils/format';
 
 interface BatchCardProps {
   batch: BatchSummary;
@@ -42,7 +43,7 @@ export function BatchCard({ batch }: BatchCardProps) {
         {batch.startedAt ? (
           <span className="inline-flex items-center gap-1.5 text-teal-900 font-semibold bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
             <Clock className="w-3.5 h-3.5 text-teal-700" />
-            Started at {new Date(batch.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            Started at {formatBatchTime(batch.startedAt)}
           </span>
         ) : (
           <span className="inline-flex items-center gap-1.5 text-slate-600 font-medium bg-slate-100 px-2 py-0.5 rounded border border-slate-200">

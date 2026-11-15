@@ -60,41 +60,78 @@ export class BatchMetricsCalculator {
   }
 
   /**
-   * Maps raw tasks and items into sorted, clean TaskDetail presentation entities
+   * Maps raw tasks and items into sorted, clean TaskDetail presentation entities.
+   * Guarantees strictly unique batch queue numbering (#1..#N) and a single authoritative unifiedStatus.
    */
   public static mapTaskDetails(
     batchTasks: TaskRecord[],
-    itemsMap: Map<string, ItemRecord>
+    itemsMap: Map<string, ItemRecord>,
+    batchTaskOrder?: string[]
   ): TaskDetail[] {
-    // Sort tasks sequentially by sequence number ascending
-    const sorted = [...batchTasks].sort(
-      (a, b) => (a.fields.Sequence || 0) - (b.fields.Sequence || 0)
-    );
+    // Sort tasks primarily by Sequence ascending (workflow step), then alphabetically by Task Name
+    const sorted = [...batchTasks].sort((a, b) => {
+      const seqDiff = (a.fields.Sequence || 0) - (b.fields.Sequence || 0);
+      if (seqDiff !== 0) return seqDiff;
+      return (a.fields['Task Name'] || '').localeCompare(b.fields['Task Name'] || '');
+    });
 
-    return sorted.map((t) => {
+    return sorted.map((t, index) => {
       const linkedItemId = t.fields.Item && t.fields.Item[0];
       const linkedItem = linkedItemId ? itemsMap.get(linkedItemId) : undefined;
 
-      // Clean item name resolution
-      let itemName = linkedItem?.fields.Name || '';
-      if (!itemName && t.fields['Task Name']) {
-        const parts = t.fields['Task Name'].split(' - ');
-        if (parts.length >= 3) {
-          itemName = parts.slice(2).join(' - ');
-        }
+      // Parse task title (e.g. "T119 - Dismantling and Prep - Nike AM90")
+      const rawName = t.fields['Task Name'] || '';
+      const parts = rawName.split(' - ');
+      const taskCode = parts.length >= 2 ? parts[0].trim() : '';
+      const actionName = parts.length >= 2 ? parts[1].trim() : rawName;
+
+      // Clean item name resolution & separate lengthy notes (e.g. Jordan 1 with worn contrasting panels...)
+      let rawItemName = linkedItem?.fields.Name || '';
+      if (!rawItemName && parts.length >= 3) {
+        rawItemName = parts.slice(2).join(' - ').trim();
       }
 
+      let itemName = rawItemName;
+      let itemNotes: string | undefined = undefined;
+
+      const withKeywordIndex = rawItemName.indexOf(' with ');
+      if (withKeywordIndex !== -1) {
+        itemName = rawItemName.substring(0, withKeywordIndex).trim();
+        itemNotes = rawItemName.substring(withKeywordIndex + 1).trim();
+      }
+
+      const isDone = t.fields.Status === 'Done' || t.fields['Task State'] === 'DONE';
       const isLocked = t.fields['Task State'] === 'LOCKED';
-      const isDone = t.fields.Status === 'Done';
+      const isInProgress = t.fields['Task State'] === 'IN PROGRESS';
+
+      // Establish ONE authoritative status for clear, unambiguous communication
+      let unifiedStatus: 'Done' | 'In Progress' | 'Ready' | 'Locked' = 'Ready';
+      if (isDone) {
+        unifiedStatus = 'Done';
+      } else if (isLocked) {
+        unifiedStatus = 'Locked';
+      } else if (isInProgress) {
+        unifiedStatus = 'In Progress';
+      } else {
+        unifiedStatus = 'Ready';
+      }
+
+      const stepNumber = t.fields.Sequence || 1;
 
       return {
         id: t.id,
-        name: t.fields['Task Name'],
-        sequence: t.fields.Sequence || 0,
+        name: rawName,
+        queueNumber: index + 1, // Strictly sequential 1..N within the batch
+        stepNumber, // Step in the shoe restoration sequence
+        sequence: stepNumber, // Backward compatibility
+        actionName,
+        taskCode,
+        unifiedStatus,
         status: t.fields.Status,
         taskState: t.fields['Task State'],
         itemId: linkedItemId,
         itemName: itemName || 'General Restoration Item',
+        itemNotes,
         itemService: linkedItem?.fields.Service,
         isLocked,
         isDone,

@@ -7,6 +7,7 @@ import { TaskRow } from '@/components/TaskRow';
 import { LoadingSkeleton, ErrorMessage } from '@/components/FeedbackStates';
 import { StatusBadge } from '@/components/StatusBadge';
 import { useBatchDetails } from '@/hooks/useBatchDetails';
+import { formatBatchTime } from '@/lib/utils/format';
 import {
   ArrowLeft,
   Check,
@@ -16,6 +17,7 @@ import {
   Play,
   Clock,
   Sparkles,
+  Lock,
 } from 'lucide-react';
 
 interface BatchPageProps {
@@ -54,7 +56,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
       : 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col pb-24 sm:pb-8">
+    <div className="min-h-screen bg-slate-50 flex flex-col pb-24 sm:pb-8" suppressHydrationWarning>
       <Header title="Sole Surgeon" showBack />
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-3.5 sm:px-6">
@@ -75,7 +77,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
             title="Refresh batch"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-teal-600' : ''}`} />
-            <span>Refresh</span>
+            <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
           </button>
         </div>
 
@@ -152,7 +154,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
                 {batch.startedAt ? (
                   <span className="inline-flex items-center gap-1 font-semibold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
                     <Clock className="w-3 h-3 text-teal-600" />
-                    Started at {new Date(batch.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    Started at {formatBatchTime(batch.startedAt)}
                   </span>
                 ) : (
                   <span className="text-slate-500 font-medium">
@@ -161,14 +163,15 @@ function BatchDetailContent({ params }: BatchPageProps) {
                 )}
               </div>
 
-              {/* Progress Summary */}
-              <div className="space-y-1 pt-1 border-t border-slate-100">
+              {/* Progress Summary & Explicit Task Breakdown */}
+              <div className="space-y-1.5 pt-1.5 border-t border-slate-100">
                 <div className="flex items-center justify-between text-xs font-medium">
                   <span className="text-slate-600">
                     Progress: <strong className="text-slate-900 font-bold">{batch.completedTasks}</strong> of <strong className="text-slate-900 font-bold">{batch.totalTasks}</strong> tasks done
                   </span>
                   <span className="font-mono font-bold text-slate-900">{percent}%</span>
                 </div>
+
                 <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                   <div
                     className={`h-full transition-all duration-300 rounded-full ${
@@ -176,6 +179,24 @@ function BatchDetailContent({ params }: BatchPageProps) {
                     }`}
                     style={{ width: `${percent}%` }}
                   />
+                </div>
+
+                {/* Explicit breakdown accounting for all tasks */}
+                <div className="flex items-center gap-1.5 pt-1 text-[11px] font-semibold text-slate-600 flex-wrap">
+                  <span className="inline-flex items-center gap-1 text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    <Check className="w-3 h-3 text-emerald-600 stroke-[3]" />
+                    <strong>{doneCount}</strong> Done
+                  </span>
+                  <span className="text-slate-300">•</span>
+                  <span className="inline-flex items-center gap-1 text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                    <Sparkles className="w-3 h-3 text-teal-600" />
+                    <strong>{readyCount}</strong> Ready to Work
+                  </span>
+                  <span className="text-slate-300">•</span>
+                  <span className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                    <Lock className="w-3 h-3 text-slate-400" />
+                    <strong>{lockedCount}</strong> Locked
+                  </span>
                 </div>
               </div>
             </div>
@@ -269,7 +290,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
             <div className="flex items-center justify-between text-xs font-bold text-teal-900 bg-teal-50 px-3.5 py-2.5 rounded-lg border border-teal-200">
               <span className="flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-teal-700" />
-                Started at {new Date(batch.startedAt!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                Started at {formatBatchTime(batch.startedAt)}
               </span>
               <span className="font-mono text-slate-700">
                 {batch.completedTasks}/{batch.totalTasks} Done
