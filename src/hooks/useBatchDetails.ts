@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { BatchDetailData } from '@/types/airtable';
 
-export type TaskFilterMode = 'all' | 'ready' | 'locked' | 'done';
+export type TaskFilterMode = 'all' | 'in_progress' | 'ready' | 'locked' | 'done';
 
 export function useBatchDetails(batchId: string) {
   const [data, setData] = useState<BatchDetailData | null>(null);
@@ -85,12 +85,16 @@ export function useBatchDetails(batchId: string) {
   };
 
   const tasks = data?.tasks || [];
-  const readyCount = tasks.filter((t) => !t.isLocked && !t.isDone).length;
-  const lockedCount = tasks.filter((t) => t.isLocked).length;
+
+  // Exact classification matching Airtable Task State values
   const doneCount = tasks.filter((t) => t.isDone).length;
+  const inProgressCount = tasks.filter((t) => !t.isDone && t.taskState === 'IN PROGRESS').length;
+  const readyCount = tasks.filter((t) => !t.isDone && t.taskState === 'READY').length;
+  const lockedCount = tasks.filter((t) => t.isLocked).length;
 
   const filteredTasks = tasks.filter((t) => {
-    if (filterMode === 'ready') return !t.isLocked && !t.isDone;
+    if (filterMode === 'in_progress') return !t.isDone && t.taskState === 'IN PROGRESS';
+    if (filterMode === 'ready') return !t.isDone && t.taskState === 'READY';
     if (filterMode === 'locked') return t.isLocked;
     if (filterMode === 'done') return t.isDone;
     return true;
@@ -100,9 +104,10 @@ export function useBatchDetails(batchId: string) {
     batch: data?.batch,
     tasks,
     filteredTasks,
+    doneCount,
+    inProgressCount,
     readyCount,
     lockedCount,
-    doneCount,
     isLoading,
     isRefreshing,
     isStartingBatch,

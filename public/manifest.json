@@ -1,11 +1,11 @@
 {
-  "name": "Sole Surgeon - Production Control System",
-  "short_name": "SoleSurgeon PCS",
+  "name": "Sole Surgeon PCS",
+  "short_name": "Sole Surgeon",
   "description": "Worker Progressive Web App for Sole Surgeon PCS",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0F172A",
-  "theme_color": "#0D9488",
+  "background_color": "#F5F7FA",
+  "theme_color": "#062F2D",
   "orientation": "portrait-primary",
   "icons": [
     {

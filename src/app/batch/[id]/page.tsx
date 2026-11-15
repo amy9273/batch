@@ -32,9 +32,10 @@ function BatchDetailContent({ params }: BatchPageProps) {
     batch,
     tasks,
     filteredTasks,
+    doneCount,
+    inProgressCount,
     readyCount,
     lockedCount,
-    doneCount,
     isLoading,
     isRefreshing,
     isStartingBatch,
@@ -56,7 +57,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
       : 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col pb-24 sm:pb-8" suppressHydrationWarning>
+    <div className="min-h-screen bg-slate-50 flex flex-col pb-32 sm:pb-12" suppressHydrationWarning>
       <Header title="Sole Surgeon" showBack />
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-3.5 sm:px-6">
@@ -64,19 +65,19 @@ function BatchDetailContent({ params }: BatchPageProps) {
         <div className="flex items-center justify-between gap-3 mb-3">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 transition bg-white px-3 py-1.5 rounded-lg border border-slate-300 shadow-2xs"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#111827] hover:text-[#009B83] transition bg-white px-3 py-1.5 rounded-lg border border-[#E2E8F0] shadow-2xs"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            Back to batches
+            Back to Batches
           </Link>
 
           <button
             onClick={refresh}
             disabled={isLoading || isRefreshing}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition shadow-2xs cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-[#E2E8F0] text-[#111827] hover:bg-slate-50 transition shadow-2xs cursor-pointer disabled:opacity-50"
             title="Refresh batch"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-teal-600' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#009B83]' : ''}`} />
             <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
           </button>
         </div>
@@ -181,68 +182,109 @@ function BatchDetailContent({ params }: BatchPageProps) {
                   />
                 </div>
 
-                {/* Explicit breakdown accounting for all tasks */}
-                <div className="flex items-center gap-1.5 pt-1 text-[11px] font-semibold text-slate-600 flex-wrap">
-                  <span className="inline-flex items-center gap-1 text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                    <Check className="w-3 h-3 text-emerald-600 stroke-[3]" />
+                {/* Explicit breakdown matching exact Airtable Task States */}
+                <div className="flex items-center gap-1.5 pt-1 text-[11px] font-semibold text-[#64748B] flex-wrap">
+                  <span className="inline-flex items-center gap-1 text-[#047857] bg-[#D1FAE5]/60 px-2 py-0.5 rounded border border-[#A7F3D0]">
+                    <Check className="w-3 h-3 text-[#009B83] stroke-[3]" />
                     <strong>{doneCount}</strong> Done
                   </span>
                   <span className="text-slate-300">•</span>
-                  <span className="inline-flex items-center gap-1 text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
-                    <Sparkles className="w-3 h-3 text-teal-600" />
-                    <strong>{readyCount}</strong> Ready to Work
-                  </span>
-                  <span className="text-slate-300">•</span>
-                  <span className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                  {inProgressCount > 0 && (
+                    <>
+                      <span className="inline-flex items-center gap-1 text-blue-800 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+                        <strong>{inProgressCount}</strong> In Progress
+                      </span>
+                      <span className="text-slate-300">•</span>
+                    </>
+                  )}
+                  {readyCount > 0 && (
+                    <>
+                      <span className="inline-flex items-center gap-1 text-[#047857] bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                        <Sparkles className="w-3 h-3 text-[#009B83]" />
+                        <strong>{readyCount}</strong> Ready
+                      </span>
+                      <span className="text-slate-300">•</span>
+                    </>
+                  )}
+                  <span className="inline-flex items-center gap-1 text-[#64748B] bg-slate-100 px-2 py-0.5 rounded border border-[#E2E8F0]">
                     <Lock className="w-3 h-3 text-slate-400" />
                     <strong>{lockedCount}</strong> Locked
                   </span>
                 </div>
               </div>
+
+              {/* Start Batch button directly inside card if unstarted (Exam Spec Section 5) */}
+              {!batch.hasStarted && (
+                <div className="mt-4 pt-3 border-t border-slate-100">
+                  <button
+                    onClick={startBatch}
+                    disabled={isStartingBatch}
+                    className="w-full min-h-[46px] px-5 py-2.5 rounded-xl text-sm font-bold bg-[#009B83] text-white hover:bg-teal-700 active:bg-[#062F2D] active:scale-[0.98] transition shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {isStartingBatch ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Starting batch...
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4 fill-white" />
+                        Start Batch
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Segmented Filter Control Bar */}
             <div className="sticky top-[52px] z-30 bg-slate-50/95 backdrop-blur-md py-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-              <div className="flex items-center justify-between gap-2 mb-1">
-                <h3 className="text-xs font-bold text-slate-700">
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <h3 className="text-xs font-bold text-[#111827]">
                   Tasks ({tasks.length})
                 </h3>
-                {readyCount > 0 && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-teal-800 bg-teal-100 px-2 py-0.5 rounded">
-                    <Sparkles className="w-3 h-3 text-teal-600" />
+                {inProgressCount > 0 ? (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+                    {inProgressCount} in progress
+                  </span>
+                ) : readyCount > 0 ? (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#047857] bg-[#D1FAE5] px-2 py-0.5 rounded">
+                    <Sparkles className="w-3 h-3 text-[#009B83]" />
                     {readyCount} ready now
                   </span>
-                )}
+                ) : null}
               </div>
 
-              {/* Segmented Control Bar */}
+              {/* Segmented Control Bar matching exact counts */}
               <div className="grid grid-cols-4 gap-1.5 bg-slate-200/70 p-1 rounded-lg text-xs font-bold">
                 <button
                   onClick={() => setFilterMode('all')}
                   className={`py-1.5 px-1 text-center rounded-md transition-all cursor-pointer ${
                     filterMode === 'all'
-                      ? 'bg-white text-slate-900 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white text-[#111827] shadow-2xs'
+                      : 'text-[#64748B] hover:text-[#111827]'
                   }`}
                 >
                   All ({tasks.length})
                 </button>
                 <button
-                  onClick={() => setFilterMode('ready')}
+                  onClick={() => setFilterMode(inProgressCount > 0 ? 'in_progress' : 'ready')}
                   className={`py-1.5 px-1 text-center rounded-md transition-all cursor-pointer ${
-                    filterMode === 'ready'
-                      ? 'bg-teal-600 text-white shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                    filterMode === 'in_progress' || filterMode === 'ready'
+                      ? 'bg-[#009B83] text-white shadow-2xs'
+                      : 'text-[#64748B] hover:text-[#111827]'
                   }`}
                 >
-                  Ready ({readyCount})
+                  {inProgressCount > 0 ? `In Progress (${inProgressCount})` : `Ready (${readyCount})`}
                 </button>
                 <button
                   onClick={() => setFilterMode('locked')}
                   className={`py-1.5 px-1 text-center rounded-md transition-all cursor-pointer ${
                     filterMode === 'locked'
-                      ? 'bg-amber-600 text-white shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-slate-700 text-white shadow-2xs'
+                      : 'text-[#64748B] hover:text-[#111827]'
                   }`}
                 >
                   Locked ({lockedCount})
@@ -251,8 +293,8 @@ function BatchDetailContent({ params }: BatchPageProps) {
                   onClick={() => setFilterMode('done')}
                   className={`py-1.5 px-1 text-center rounded-md transition-all cursor-pointer ${
                     filterMode === 'done'
-                      ? 'bg-emerald-600 text-white shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-[#047857] text-white shadow-2xs'
+                      : 'text-[#64748B] hover:text-[#111827]'
                   }`}
                 >
                   Done ({doneCount})
@@ -283,38 +325,26 @@ function BatchDetailContent({ params }: BatchPageProps) {
         )}
       </main>
 
-      {/* Sticky Mobile Bottom Bar (Thumb Zone) */}
-      {batch && (
-        <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-300 p-3 sm:hidden shadow-lg pb-safe">
-          {batch.hasStarted ? (
-            <div className="flex items-center justify-between text-xs font-bold text-teal-900 bg-teal-50 px-3.5 py-2.5 rounded-lg border border-teal-200">
-              <span className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-teal-700" />
-                Started at {formatBatchTime(batch.startedAt)}
-              </span>
-              <span className="font-mono text-slate-700">
-                {batch.completedTasks}/{batch.totalTasks} Done
-              </span>
-            </div>
-          ) : (
-            <button
-              onClick={startBatch}
-              disabled={isStartingBatch}
-              className="w-full min-h-[50px] px-6 py-3 rounded-xl text-sm font-bold bg-teal-600 text-white hover:bg-teal-700 active:bg-teal-800 active:scale-[0.98] transition shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-            >
-              {isStartingBatch ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Starting batch...
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4 fill-white" />
-                  Start this batch
-                </>
-              )}
-            </button>
-          )}
+      {/* Sticky Mobile Bottom Bar (Thumb Zone for Unstarted Batch) */}
+      {batch && !batch.hasStarted && (
+        <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E2E8F0] p-3 sm:hidden shadow-lg pb-safe">
+          <button
+            onClick={startBatch}
+            disabled={isStartingBatch}
+            className="w-full min-h-[48px] px-6 py-3 rounded-xl text-sm font-bold bg-[#009B83] text-white hover:bg-teal-700 active:bg-[#062F2D] active:scale-[0.98] transition shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            {isStartingBatch ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Starting batch...
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4 fill-white" />
+                Start Batch
+              </>
+            )}
+          </button>
         </div>
       )}
     </div>

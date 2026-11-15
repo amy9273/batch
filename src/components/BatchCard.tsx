@@ -21,58 +21,65 @@ export function BatchCard({ batch }: BatchCardProps) {
     ? 'In Progress'
     : 'Not Started';
 
+  const actionText = batch.hasStarted && !batch.isCompleted ? 'Continue Batch' : 'View Batch';
+
   return (
     <Link
-      href={`/batch/${batch.id}`}
-      className="block group bg-white rounded-xl p-5 border border-slate-300 shadow-2xs hover:border-teal-600 transition-all active:scale-[0.985]"
+      href={`/batches/${batch.id}`}
+      className="block group bg-white rounded-xl p-5 border border-[#E2E8F0] shadow-2xs hover:border-[#009B83] transition-all active:scale-[0.985]"
     >
+      {/* Top section: Batch name & Status badge */}
       <div className="flex items-start justify-between gap-3 mb-2.5">
         <div>
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Batch
+          <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider block">
+            BATCH
           </span>
-          <h2 className="text-lg font-black text-slate-900 group-hover:text-teal-800 transition-colors font-mono">
+          <h2 className="text-lg font-black text-[#111827] group-hover:text-[#009B83] transition-colors font-mono">
             {batch.name}
           </h2>
         </div>
         <StatusBadge type="batch-status" value={statusType} />
       </div>
 
-      {/* Started timestamp & task count */}
-      <div className="text-xs text-slate-600 mb-4 flex items-center gap-3 flex-wrap">
-        {batch.startedAt ? (
-          <span className="inline-flex items-center gap-1.5 text-teal-900 font-semibold bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
-            <Clock className="w-3.5 h-3.5 text-teal-700" />
-            Started at {formatBatchTime(batch.startedAt)}
+      {/* Middle section: Worker, Target Date & Started status */}
+      <div className="text-xs text-[#64748B] mb-3 space-y-1">
+        <div>
+          Worker: <strong className="text-[#111827] font-semibold">{batch.worker}</strong>
+        </div>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <span>
+            Target Date: <strong className="text-[#111827] font-semibold">{batch.targetDate}</strong>
           </span>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 text-slate-600 font-medium bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-            <Clock className="w-3.5 h-3.5 text-slate-400" />
-            Not started yet
-          </span>
-        )}
 
-        <span className="inline-flex items-center gap-1 text-slate-600 font-medium">
-          <Layers className="w-3.5 h-3.5 text-slate-400" />
-          {batch.totalTasks} tasks
-        </span>
+          {batch.startedAt ? (
+            <span className="inline-flex items-center gap-1 text-[#047857] font-semibold bg-[#D1FAE5]/60 px-2 py-0.5 rounded border border-[#A7F3D0]">
+              <Clock className="w-3 h-3 text-[#009B83]" />
+              Started at {formatBatchTime(batch.startedAt)}
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-[#64748B] font-medium bg-slate-100 px-2 py-0.5 rounded border border-[#E2E8F0]">
+              <Clock className="w-3 h-3 text-slate-400" />
+              Not started yet
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Progress Bar */}
-      <div className="space-y-1.5 mb-3">
+      {/* Progress Bar & Percentage */}
+      <div className="space-y-1.5 mb-3 pt-2 border-t border-slate-100">
         <div className="flex items-center justify-between text-xs font-medium">
-          <span className="text-slate-600">
-            Progress: <strong className="text-slate-900 font-bold">{batch.completedTasks}</strong> of <strong className="text-slate-900 font-bold">{batch.totalTasks}</strong> done
+          <span className="text-[#64748B]">
+            Progress: <strong className="text-[#111827] font-bold">{batch.completedTasks}</strong> of <strong className="text-[#111827] font-bold">{batch.totalTasks}</strong> tasks completed
           </span>
-          <span className="font-mono font-bold text-slate-900">{percent}%</span>
+          <span className="font-mono font-bold text-[#111827]">{percent}%</span>
         </div>
-        <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-[#E2E8F0]">
           <div
             className={`h-full transition-all duration-300 rounded-full ${
               batch.isCompleted
-                ? 'bg-emerald-600'
+                ? 'bg-[#047857]'
                 : batch.hasStarted
-                ? 'bg-teal-600'
+                ? 'bg-[#009B83]'
                 : 'bg-slate-300'
             }`}
             style={{ width: `${percent}%` }}
@@ -80,9 +87,9 @@ export function BatchCard({ batch }: BatchCardProps) {
         </div>
       </div>
 
-      {/* Simple View Tasks Action */}
-      <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-teal-700 group-hover:text-teal-900">
-        <span>View tasks</span>
+      {/* Bottom Action: View Batch / Continue Batch */}
+      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#009B83] group-hover:text-[#062F2D]">
+        <span>{actionText}</span>
         <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
       </div>
     </Link>

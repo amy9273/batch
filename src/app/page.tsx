@@ -10,72 +10,61 @@ import { RefreshCw, AlertCircle } from 'lucide-react';
 export default function BatchListPage() {
   const { batches, isLoading, isRefreshing, error, refresh, retry } = useBatches();
 
-  // Metric summaries derived directly from data (rerender-derived-state-no-effect)
+  // Metric summaries derived directly from data according to exam spec
   const totalBatches = batches.length;
-  const startedBatches = batches.filter((b) => b.hasStarted).length;
-  const completedBatches = batches.filter((b) => b.isCompleted).length;
   const totalTasks = batches.reduce((acc, b) => acc + b.totalTasks, 0);
-  const totalCompletedTasks = batches.reduce((acc, b) => acc + b.completedTasks, 0);
+  const tasksCompleted = batches.reduce((acc, b) => acc + b.completedTasks, 0);
+  const tasksRemaining = Math.max(0, totalTasks - tasksCompleted);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col pb-safe">
+    <div className="min-h-screen bg-slate-50 flex flex-col pb-safe" suppressHydrationWarning>
       <Header title="Sole Surgeon" />
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-5 sm:px-6">
         {/* Header Title & Refresh */}
-        <div className="flex items-center justify-between gap-3 mb-5">
+        <div className="flex items-center justify-between gap-3 mb-4">
           <div>
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              Today&apos;s Batches
+            <h2 className="text-xl sm:text-2xl font-bold text-[#111827] tracking-tight">
+              My Batches
             </h2>
-            <p className="text-xs text-slate-600 mt-0.5">
-              Batches for <strong className="font-bold text-slate-900">Ana</strong> • <strong className="font-bold text-slate-900">October 22, 2026</strong>
+            <p className="text-xs sm:text-sm text-[#64748B] mt-0.5">
+              Your assigned production batches for October 22, 2026
             </p>
           </div>
 
           <button
             onClick={refresh}
             disabled={isLoading || isRefreshing}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 active:bg-slate-100 transition shadow-2xs cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-[#E2E8F0] text-[#111827] hover:bg-slate-50 active:bg-slate-100 transition shadow-2xs cursor-pointer disabled:opacity-50"
             title="Refresh batch list"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-teal-600' : ''}`} />
-            <span>Refresh</span>
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#009B83]' : ''}`} />
+            <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
           </button>
         </div>
 
-        {/* Clear Everyday Metrics */}
+        {/* Compact Summary Metrics (Spec: Total Batches, Tasks Completed, Tasks Remaining) */}
         {!isLoading && !error && batches.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
-            <div className="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
-              <span className="text-xs font-semibold text-slate-500 block mb-0.5">
+          <div className="grid grid-cols-3 gap-2.5 mb-5">
+            <div className="bg-white p-3.5 rounded-xl border border-[#E2E8F0] shadow-2xs">
+              <span className="text-xs font-semibold text-[#64748B] block mb-0.5">
                 Total Batches
               </span>
-              <span className="text-2xl font-black text-slate-900 font-mono">{totalBatches}</span>
+              <span className="text-2xl font-black text-[#111827] font-mono">{totalBatches}</span>
             </div>
 
-            <div className="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
-              <span className="text-xs font-semibold text-slate-500 block mb-0.5">
-                Started
+            <div className="bg-white p-3.5 rounded-xl border border-[#E2E8F0] shadow-2xs">
+              <span className="text-xs font-semibold text-[#64748B] block mb-0.5">
+                Tasks Completed
               </span>
-              <span className="text-2xl font-black text-teal-700 font-mono">{startedBatches}</span>
+              <span className="text-2xl font-black text-[#047857] font-mono">{tasksCompleted}</span>
             </div>
 
-            <div className="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
-              <span className="text-xs font-semibold text-slate-500 block mb-0.5">
-                Finished
+            <div className="bg-white p-3.5 rounded-xl border border-[#E2E8F0] shadow-2xs">
+              <span className="text-xs font-semibold text-[#64748B] block mb-0.5">
+                Tasks Remaining
               </span>
-              <span className="text-2xl font-black text-emerald-700 font-mono">{completedBatches}</span>
-            </div>
-
-            <div className="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
-              <span className="text-xs font-semibold text-slate-500 block mb-0.5">
-                Tasks Done
-              </span>
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-black text-slate-900 font-mono">{totalCompletedTasks}</span>
-                <span className="text-xs text-slate-500 font-mono">/ {totalTasks}</span>
-              </div>
+              <span className="text-2xl font-black text-[#111827] font-mono">{tasksRemaining}</span>
             </div>
           </div>
         )}
@@ -85,26 +74,26 @@ export default function BatchListPage() {
           <LoadingSkeleton count={3} />
         ) : error ? (
           <ErrorMessage
-            title="Could not load batches"
-            message={error}
+            title="Unable to load batches"
+            message="Something went wrong while retrieving your assigned batches."
             onRetry={retry}
           />
         ) : batches.length === 0 ? (
-          <div className="bg-white rounded-xl p-10 border border-slate-200 text-center max-w-md mx-auto my-8">
+          <div className="bg-white rounded-xl p-10 border border-[#E2E8F0] text-center max-w-md mx-auto my-8">
             <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-400">
               <AlertCircle className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-bold text-slate-800 mb-1">
-              No batches found
+            <h3 className="text-sm font-bold text-[#111827] mb-1">
+              No batches assigned
             </h3>
-            <p className="text-xs text-slate-500 mb-4">
-              There are no batches assigned to Ana for October 22, 2026.
+            <p className="text-xs text-[#64748B] mb-4">
+              There are no batches assigned to you for October 22, 2026.
             </p>
             <button
-              onClick={retry}
-              className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition cursor-pointer"
+              onClick={refresh}
+              className="px-4 py-2 bg-[#062F2D] text-white text-xs font-bold rounded-lg hover:bg-teal-900 transition cursor-pointer"
             >
-              Check again
+              Refresh
             </button>
           </div>
         ) : (
