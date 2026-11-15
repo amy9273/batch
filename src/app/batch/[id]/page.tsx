@@ -254,26 +254,9 @@ function BatchDetailContent({ params }: BatchPageProps) {
               )}
             </div>
 
-            {/* Segmented Filter Control Bar */}
+            {/* Segmented Filter Control Bar (Single Clean Row) */}
             <div className="sticky top-[52px] z-30 bg-slate-50/95 backdrop-blur-md py-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-              <div className="flex items-center justify-between gap-2 mb-1.5">
-                <h3 className="text-xs font-bold text-[#111827]">
-                  Tasks ({tasks.length})
-                </h3>
-                {inProgressCount > 0 ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-                    {inProgressCount} in progress
-                  </span>
-                ) : readyCount > 0 ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#047857] bg-[#D1FAE5] px-2 py-0.5 rounded">
-                    <Sparkles className="w-3 h-3 text-[#009B83]" />
-                    {readyCount} ready now
-                  </span>
-                ) : null}
-              </div>
-
-              {/* Segmented Control Bar matching exact counts (Clean selection, no dark outlines) */}
+              {/* Segmented Control Bar matching exact counts (Single unified row) */}
               <div className="grid grid-cols-4 gap-1.5 bg-slate-200/70 p-1 rounded-lg text-xs font-bold">
                 <button
                   onClick={() => setFilterMode('all')}
