@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Check, Loader2, Lock, Sparkles } from 'lucide-react';
 import { TaskDetail } from '@/types/airtable';
 
@@ -15,13 +15,37 @@ interface CareNoteProps {
 }
 
 /**
- * Workshop Care Note: Displays special handling instructions with a responsive layout
- * (vertical on mobile for 100% instruction width, horizontal on desktop) and hybrid expansion.
+ * Workshop Care Note: Displays special handling instructions with a responsive layout.
+ * Accurately measures DOM overflow so "Show more" / "Show less" ONLY appears when
+ * the text actually exceeds the visible line limit and cannot fit.
  */
 function CareNote({ note }: CareNoteProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  // Notes exceeding ~90 characters occupy more than 2 lines, qualifying for progressive disclosure
-  const isLong = note.length > 90 || note.split('\n').length > 2;
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const textRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+
+    const checkOverflow = () => {
+      // Only measure when collapsed (!isExpanded) to accurately detect if truncation occurs
+      if (!isExpanded) {
+        const overflows = el.scrollHeight > el.clientHeight + 1;
+        setIsOverflowing(overflows);
+      }
+    };
+
+    checkOverflow();
+
+    // Re-check automatically on window/element resize (e.g. mobile vs desktop)
+    const observer = new ResizeObserver(() => {
+      checkOverflow();
+    });
+    observer.observe(el);
+
+    return () => observer.disconnect();
+  }, [note, isExpanded]);
 
   return (
     <div className="my-1.5 p-2 sm:p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-950 flex flex-col sm:flex-row sm:items-start gap-1.5 sm:gap-2">
@@ -35,11 +59,12 @@ function CareNote({ note }: CareNoteProps) {
       {/* Instructions: Gets full available width on mobile for easier reading */}
       <div className="min-w-0 flex-1">
         <p
+          ref={textRef}
           className={`font-medium text-amber-900 leading-snug break-words ${
-            isLong && !isExpanded ? 'line-clamp-2' : ''
+            !isExpanded ? 'line-clamp-2' : ''
           }`}
           style={
-            isLong && !isExpanded
+            !isExpanded
               ? {
                   display: '-webkit-box',
                   WebkitLineClamp: 2,
@@ -52,7 +77,8 @@ function CareNote({ note }: CareNoteProps) {
           {note}
         </p>
 
-        {isLong && (
+        {/* Strictly hide button if the text can already fit completely */}
+        {isOverflowing && (
           <button
             type="button"
             onClick={(e) => {
