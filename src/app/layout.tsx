@@ -43,6 +43,24 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        {/* Neutralize browser extension DOM mutations (e.g. Bitdefender bis_skin_checked) before React hydration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                new MutationObserver(function(m) {
+                  for (var i = 0; i < m.length; i++) {
+                    if (m[i].target && m[i].target.removeAttribute && m[i].target.hasAttribute('bis_skin_checked')) {
+                      m[i].target.removeAttribute('bis_skin_checked');
+                    }
+                  }
+                }).observe(document.documentElement, { attributes: true, subtree: true, attributeFilter: ['bis_skin_checked'] });
+              } catch(e) {}
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 selection:bg-teal-500 selection:text-white" suppressHydrationWarning>
         <PWAProvider>{children}</PWAProvider>
       </body>
