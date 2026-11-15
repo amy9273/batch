@@ -27,8 +27,15 @@ export class ProductionRuleEngine {
 
   /**
    * Rule 2: A task whose Task State is LOCKED cannot be marked Done.
+   * Also ensures an already completed task cannot be completed again.
    */
   public static validateTaskComplete(task: TaskRecord): ValidationResult {
+    if (task.fields.Status === 'Done') {
+      return {
+        valid: false,
+        error: `Task "${task.fields['Task Name'] || task.id}" has already been marked Done.`,
+      };
+    }
     if (task.fields['Task State'] === 'LOCKED') {
       const err = new TaskLockedError(task.fields['Task Name'] || task.id);
       return { valid: false, error: err.message };

@@ -223,26 +223,33 @@ function BatchDetailContent({ params }: BatchPageProps) {
                 </div>
               </div>
 
-              {/* Start Batch button directly inside card if unstarted (Exam Spec Section 5) */}
+              {/* Explanatory notice when unstarted (No duplicate mobile button) */}
               {!batch.hasStarted && (
-                <div className="mt-4 pt-3 border-t border-slate-100">
-                  <button
-                    onClick={startBatch}
-                    disabled={isStartingBatch}
-                    className="w-full min-h-[46px] px-5 py-2.5 rounded-xl text-sm font-bold bg-[#009B83] text-white hover:bg-teal-700 active:bg-[#062F2D] active:scale-[0.98] transition shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                  >
-                    {isStartingBatch ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Starting batch...
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4 fill-white" />
-                        Start Batch
-                      </>
-                    )}
-                  </button>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs text-[#64748B]">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                    This batch hasn&apos;t started yet.
+                  </span>
+                  {/* Desktop-only Start button; mobile uses the thumb-zone sticky button */}
+                  <div className="hidden sm:block">
+                    <button
+                      onClick={startBatch}
+                      disabled={isStartingBatch}
+                      className="px-4 py-2 rounded-lg text-xs font-bold bg-[#009B83] text-white hover:bg-teal-700 active:bg-[#062F2D] transition shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      {isStartingBatch ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          Starting...
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-3.5 h-3.5 fill-white" />
+                          Start Batch
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -266,13 +273,13 @@ function BatchDetailContent({ params }: BatchPageProps) {
                 ) : null}
               </div>
 
-              {/* Segmented Control Bar matching exact counts */}
+              {/* Segmented Control Bar matching exact counts (Clean selection, no dark outlines) */}
               <div className="grid grid-cols-4 gap-1.5 bg-slate-200/70 p-1 rounded-lg text-xs font-bold">
                 <button
                   onClick={() => setFilterMode('all')}
-                  className={`py-1.5 px-1 text-center rounded-md transition-all cursor-pointer ${
+                  className={`py-1.5 px-1 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 ${
                     filterMode === 'all'
-                      ? 'bg-white text-[#111827] shadow-2xs'
+                      ? 'bg-white text-[#111827] shadow-xs'
                       : 'text-[#64748B] hover:text-[#111827]'
                   }`}
                 >
@@ -280,9 +287,9 @@ function BatchDetailContent({ params }: BatchPageProps) {
                 </button>
                 <button
                   onClick={() => setFilterMode(inProgressCount > 0 ? 'in_progress' : 'ready')}
-                  className={`py-1.5 px-1 text-center rounded-md transition-all cursor-pointer ${
+                  className={`py-1.5 px-1 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 ${
                     filterMode === 'in_progress' || filterMode === 'ready'
-                      ? 'bg-[#009B83] text-white shadow-2xs'
+                      ? 'bg-[#009B83] text-white shadow-xs'
                       : 'text-[#64748B] hover:text-[#111827]'
                   }`}
                 >
@@ -290,9 +297,9 @@ function BatchDetailContent({ params }: BatchPageProps) {
                 </button>
                 <button
                   onClick={() => setFilterMode('locked')}
-                  className={`py-1.5 px-1 text-center rounded-md transition-all cursor-pointer ${
+                  className={`py-1.5 px-1 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 ${
                     filterMode === 'locked'
-                      ? 'bg-slate-700 text-white shadow-2xs'
+                      ? 'bg-slate-700 text-white shadow-xs'
                       : 'text-[#64748B] hover:text-[#111827]'
                   }`}
                 >
@@ -300,9 +307,9 @@ function BatchDetailContent({ params }: BatchPageProps) {
                 </button>
                 <button
                   onClick={() => setFilterMode('done')}
-                  className={`py-1.5 px-1 text-center rounded-md transition-all cursor-pointer ${
+                  className={`py-1.5 px-1 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 ${
                     filterMode === 'done'
-                      ? 'bg-[#047857] text-white shadow-2xs'
+                      ? 'bg-[#047857] text-white shadow-xs'
                       : 'text-[#64748B] hover:text-[#111827]'
                   }`}
                 >

@@ -62,6 +62,25 @@ describe('Backend Invariant Validation Tests (Mock Data)', () => {
       assert.match(result.error || '', /LOCKED and cannot be marked Done/i);
     });
 
+    test('blocks marking a task as Done when Status is already Done', () => {
+      const mockDoneTask: TaskRecord = {
+        id: 'recTaskDone',
+        fields: {
+          'Task Name': 'T050 - Sorting - Hoka Mach X',
+          Sequence: 1,
+          Status: 'Done',
+          'Task State': 'DONE',
+          Item: ['recItem01'],
+          Batch: ['recBatch01'],
+        },
+      };
+
+      const result = validateTaskComplete(mockDoneTask);
+
+      assert.equal(result.valid, false);
+      assert.match(result.error || '', /already been marked Done/i);
+    });
+
     test('permits marking a task as Done when Task State is READY or IN PROGRESS', () => {
       const mockReadyTask: TaskRecord = {
         id: 'recTaskReady',

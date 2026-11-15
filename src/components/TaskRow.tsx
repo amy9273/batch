@@ -32,7 +32,7 @@ export function TaskRow({ task, onTaskCompleted }: TaskRowProps) {
   // State 1: Completed Task (Compact, space-saving, non-interactive indicator)
   if (task.isDone) {
     return (
-      <div className="relative overflow-hidden rounded-xl border border-[#E2E8F0] bg-slate-50/70 p-3 pl-4 sm:px-4 transition-all">
+      <div className="relative overflow-hidden rounded-xl border border-[#E2E8F0] bg-slate-50/70 p-2.5 pl-3.5 sm:p-3 sm:px-4 transition-all">
         {/* Subtle Green Flush Indicator */}
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#047857]" />
 
@@ -55,7 +55,7 @@ export function TaskRow({ task, onTaskCompleted }: TaskRowProps) {
                 )}
               </div>
 
-              <p className="text-xs text-[#64748B] font-medium mb-1">
+              <p className="text-xs text-[#64748B] font-medium mb-0.5">
                 Step {task.stepNumber}: {task.actionName}{' '}
                 {task.taskCode && (
                   <span className="font-mono text-[10px] text-slate-400">
@@ -90,7 +90,7 @@ export function TaskRow({ task, onTaskCompleted }: TaskRowProps) {
   // State 2: Locked Task (Muted, clear reason why locked, non-interactive)
   if (task.isLocked) {
     return (
-      <div className="relative overflow-hidden rounded-xl border border-[#E2E8F0] bg-[#F1F5F9]/50 p-3 pl-4 sm:p-3.5 sm:pl-5 transition-all">
+      <div className="relative overflow-hidden rounded-xl border border-[#E2E8F0] bg-[#F1F5F9]/50 p-2.5 pl-3.5 sm:p-3 sm:pl-4 transition-all">
         {/* Gray Flush Indicator */}
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-slate-300" />
 
@@ -113,7 +113,7 @@ export function TaskRow({ task, onTaskCompleted }: TaskRowProps) {
                 )}
               </div>
 
-              <p className="text-xs text-[#64748B] font-medium mb-1">
+              <p className="text-xs text-[#64748B] font-medium mb-0.5">
                 Step {task.stepNumber}: {task.actionName}{' '}
                 {task.taskCode && (
                   <span className="font-mono text-[10px] text-slate-400 font-semibold">
@@ -152,7 +152,7 @@ export function TaskRow({ task, onTaskCompleted }: TaskRowProps) {
 
   // State 3: Active Task (Eligible: Ready to work or In Progress - High contrast, primary focus, prominent CTA)
   return (
-    <div className="relative overflow-hidden rounded-xl border-2 border-[#009B83] bg-white shadow-xs p-3.5 pl-4 sm:p-4 sm:pl-5 transition-all">
+    <div className="relative overflow-hidden rounded-xl border-2 border-[#009B83] bg-white shadow-xs p-3 pl-3.5 sm:p-3.5 sm:pl-4.5 transition-all">
       {/* Primary Green Flush Indicator */}
       <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#009B83]" />
 
@@ -176,7 +176,7 @@ export function TaskRow({ task, onTaskCompleted }: TaskRowProps) {
               )}
             </div>
 
-            <p className="text-xs text-[#111827] font-semibold mb-1 flex items-center gap-1.5 flex-wrap">
+            <p className={`text-xs text-[#111827] font-semibold flex items-center gap-1.5 flex-wrap ${task.itemNotes ? 'mb-1' : 'mb-0.5'}`}>
               <span>Step {task.stepNumber}: {task.actionName}</span>
               {task.taskCode && (
                 <span className="font-mono text-[10px] text-slate-400 font-bold">
