@@ -105,16 +105,14 @@ export class BatchMetricsCalculator {
       const isLocked = t.fields['Task State'] === 'LOCKED';
       const isInProgress = t.fields['Task State'] === 'IN PROGRESS';
 
-      // Establish ONE authoritative status for clear, unambiguous communication
-      let unifiedStatus: 'Done' | 'In Progress' | 'Ready' | 'Locked' = 'Ready';
+      // Establish ONE authoritative status matching exact Airtable workflow states
+      let unifiedStatus: 'Done' | 'In Progress' | 'Ready' | 'Locked' = 'In Progress';
       if (isDone) {
         unifiedStatus = 'Done';
       } else if (isLocked) {
         unifiedStatus = 'Locked';
-      } else if (isInProgress) {
-        unifiedStatus = 'In Progress';
       } else {
-        unifiedStatus = 'Ready';
+        unifiedStatus = 'In Progress';
       }
 
       const stepNumber = t.fields.Sequence || 1;

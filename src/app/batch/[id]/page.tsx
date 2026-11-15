@@ -16,7 +16,6 @@ import {
   Loader2,
   Play,
   Clock,
-  Sparkles,
   Lock,
 } from 'lucide-react';
 
@@ -39,7 +38,6 @@ function BatchDetailContent({ params }: BatchPageProps) {
     filteredTasks,
     doneCount,
     inProgressCount,
-    readyCount,
     lockedCount,
     isLoading,
     isRefreshing,
@@ -191,31 +189,18 @@ function BatchDetailContent({ params }: BatchPageProps) {
                   />
                 </div>
 
-                {/* Explicit breakdown matching exact Airtable Task States */}
+                {/* Explicit breakdown matching exact Airtable Task States (Done, In Progress, Locked) */}
                 <div className="flex items-center gap-1.5 pt-1 text-[11px] font-semibold text-[#64748B] flex-wrap">
                   <span className="inline-flex items-center gap-1 text-[#047857] bg-[#D1FAE5]/60 px-2 py-0.5 rounded border border-[#A7F3D0]">
                     <Check className="w-3 h-3 text-[#009B83] stroke-[3]" />
                     <strong>{doneCount}</strong> Done
                   </span>
                   <span className="text-slate-300">•</span>
-                  {inProgressCount > 0 && (
-                    <>
-                      <span className="inline-flex items-center gap-1 text-blue-800 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-                        <strong>{inProgressCount}</strong> In Progress
-                      </span>
-                      <span className="text-slate-300">•</span>
-                    </>
-                  )}
-                  {readyCount > 0 && (
-                    <>
-                      <span className="inline-flex items-center gap-1 text-[#047857] bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
-                        <Sparkles className="w-3 h-3 text-[#009B83]" />
-                        <strong>{readyCount}</strong> Ready
-                      </span>
-                      <span className="text-slate-300">•</span>
-                    </>
-                  )}
+                  <span className="inline-flex items-center gap-1 text-blue-800 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+                    <strong>{inProgressCount}</strong> In Progress
+                  </span>
+                  <span className="text-slate-300">•</span>
                   <span className="inline-flex items-center gap-1 text-[#64748B] bg-slate-100 px-2 py-0.5 rounded border border-[#E2E8F0]">
                     <Lock className="w-3 h-3 text-slate-400" />
                     <strong>{lockedCount}</strong> Locked
@@ -256,11 +241,11 @@ function BatchDetailContent({ params }: BatchPageProps) {
 
             {/* Segmented Filter Control Bar (Single Clean Row) */}
             <div className="sticky top-[52px] z-30 bg-slate-50/95 backdrop-blur-md py-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-              {/* Segmented Control Bar matching exact counts (Single unified row, responsive labels to prevent wrapping) */}
-              <div className="grid grid-cols-4 gap-1 sm:gap-1.5 bg-slate-200/70 p-1 rounded-lg text-xs font-bold">
+              {/* Flex row gives In Progress full space while keeping others compact */}
+              <div className="flex items-center bg-slate-200/70 p-1 rounded-lg text-xs font-bold gap-1 sm:gap-1.5">
                 <button
                   onClick={() => setFilterMode('all')}
-                  className={`py-1.5 px-0.5 sm:px-1 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 whitespace-nowrap ${
+                  className={`py-1.5 px-2 sm:px-3 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 whitespace-nowrap shrink-0 ${
                     filterMode === 'all'
                       ? 'bg-white text-[#111827] shadow-xs'
                       : 'text-[#64748B] hover:text-[#111827]'
@@ -269,23 +254,18 @@ function BatchDetailContent({ params }: BatchPageProps) {
                   All ({tasks.length})
                 </button>
                 <button
-                  onClick={() => setFilterMode(inProgressCount > 0 ? 'in_progress' : 'ready')}
-                  className={`py-1.5 px-0.5 sm:px-1 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 whitespace-nowrap ${
-                    filterMode === 'in_progress' || filterMode === 'ready'
+                  onClick={() => setFilterMode('in_progress')}
+                  className={`py-1.5 px-2.5 sm:px-4 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 whitespace-nowrap flex-1 ${
+                    filterMode === 'in_progress'
                       ? 'bg-[#009B83] text-white shadow-xs'
                       : 'text-[#64748B] hover:text-[#111827]'
                   }`}
                 >
-                  <span className="sm:hidden">
-                    {inProgressCount > 0 ? `Active (${inProgressCount})` : `Ready (${readyCount})`}
-                  </span>
-                  <span className="hidden sm:inline">
-                    {inProgressCount > 0 ? `In Progress (${inProgressCount})` : `Ready (${readyCount})`}
-                  </span>
+                  In Progress ({inProgressCount})
                 </button>
                 <button
                   onClick={() => setFilterMode('locked')}
-                  className={`py-1.5 px-0.5 sm:px-1 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 whitespace-nowrap ${
+                  className={`py-1.5 px-2 sm:px-3 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 whitespace-nowrap shrink-0 ${
                     filterMode === 'locked'
                       ? 'bg-slate-700 text-white shadow-xs'
                       : 'text-[#64748B] hover:text-[#111827]'
@@ -295,7 +275,7 @@ function BatchDetailContent({ params }: BatchPageProps) {
                 </button>
                 <button
                   onClick={() => setFilterMode('done')}
-                  className={`py-1.5 px-0.5 sm:px-1 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 whitespace-nowrap ${
+                  className={`py-1.5 px-2 sm:px-3 text-center rounded-md transition-all cursor-pointer border-0 outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 whitespace-nowrap shrink-0 ${
                     filterMode === 'done'
                       ? 'bg-[#047857] text-white shadow-xs'
                       : 'text-[#64748B] hover:text-[#111827]'
@@ -310,7 +290,10 @@ function BatchDetailContent({ params }: BatchPageProps) {
             {filteredTasks.length === 0 ? (
               <div className="bg-white rounded-xl p-8 border border-slate-300 text-center">
                 <p className="text-xs text-slate-500 font-medium">
-                  No tasks under &quot;{filterMode}&quot;.
+                  {filterMode === 'in_progress' && 'No tasks currently in progress.'}
+                  {filterMode === 'locked' && 'No locked tasks in this batch.'}
+                  {filterMode === 'done' && 'No tasks completed yet.'}
+                  {filterMode === 'all' && 'No tasks found in this batch.'}
                 </p>
               </div>
             ) : (
